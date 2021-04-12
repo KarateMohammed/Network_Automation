@@ -1,0 +1,11 @@
+touch file.txt
+git add 2nd_file.txt
+git commit -m "Commit for Second File"
+git status
+git config credential.helper store  ## to store user and pass so u can enter it one time every while
+git push -u origin master
+git push origin :fix/authentication    ##Delete remote branch
+git branch -d <branch>  ## delete local branch
+git fetch -p  ## "prune". After fetching, branches which no longer exist on the remote will be deleted.
+git branch  -a # show local and remote branches
+
