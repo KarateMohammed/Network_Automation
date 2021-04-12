@@ -1,11 +1,11 @@
- # ls | wc -l ## commad to see numbers of files on the directory
+# ls | wc -l ## commad to see numbers of files on the directory
 # ssh 192.168.1.2 -o Kexalgorithms=+diffie-hellman-group1-sha1  ## to solve problem while connecting from client that have mismatch on Diffe
 ## Or u can add this to
 	# KexAlgorithms diffie-hellman-group1-sha1,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha25>
 	# Ciphers 3des-cbc,blowfish-cbc,aes128-cbc,aes128-ctr,aes256-ctr
 ##  to  nano /etc/ssh/ssh_config
- # ssh-keygen -A
- # service ssh restart
+# ssh-keygen -A
+# service ssh restart
 # path for ntc-templates TestFSM /usr/local/lib/python3.8/dist-packages/ntc_templates/templates/ 
 #export NET_TEXTFSM=/usr/local/lib/python3.8/dist-packages/ntc_templates/templates/
 
@@ -43,8 +43,8 @@ import subprocess
 # Device_Type=[ 'cisco_ios','cisco_ios_telnet']
 Device_Type=[ 'cisco_ios_telnet','cisco_ios']
 
-Username_Device=["cisco"]
-Passowrd_Device=["cisco"]
+Username_Device=["m.essam","cisco"]
+Passowrd_Device=["totatota2017","cisco"]
 Passowrd_Device_Enable=["cisco","cs"]
 
 Global_Output=[]
@@ -69,7 +69,7 @@ Configuration_Switch=""
 ##################################################################
 ####################### Get IPs from file ##########################
 ##################################################################
-with open('s.txt', 'r') as file:
+with open('/home/khayat/s.txt', 'r') as file:
 		num =file.read().splitlines()
 
 num= list(dict.fromkeys(num))
@@ -105,11 +105,11 @@ def ConfigurationTest(ip,Device_Type_Num= 0,User_Pass_Num= 0,Passowrd_Enable_Num
 						'ip':str(ip),
 						'username': Username_Device[User_Pass_Num],
 						'password': Passowrd_Device[User_Pass_Num],
-						# 'global_delay_factor': 10,
+						'global_delay_factor': 15, #  if there is authentication problem allow this
 						# 'secret':'cs'
-						'secret':Passowrd_Device_Enable[Passowrd_Enable_Num]
+						'secret':Passowrd_Device_Enable[Passowrd_Enable_Num],
 						# 'timeout':10
-						 # 'session_timeout':5
+						 'session_timeout':10 	#  if there is authentication problem allow this
 								}
 
 				try:
@@ -157,9 +157,9 @@ def ConfigurationTest(ip,Device_Type_Num= 0,User_Pass_Num= 0,Passowrd_Enable_Num
 										print ("Confirmation Exception Error")
 								return output
 
+
+
 						print ("Entered Device Successfully \t"+ip +"\n")
-
-
 
 		######################################################################
 		################ Here Is The Cisco Configuration  ####################
