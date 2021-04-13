@@ -37,5 +37,8 @@ git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/main
 sudo apt-get install git bash-completion
 source /etc/bash_completion
 
+# Add new branch 
+sudo git checkout -b tqdm
+
 
 
