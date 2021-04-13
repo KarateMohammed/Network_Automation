@@ -29,3 +29,13 @@ git push -f origin master
 
 # Using the argument -m will transfer all of the commit history on the ‘master’  to new ‘main’ branch so nothing gets lost
 git branch -m master main
+
+# At this stage if ‘master’ was your default branch you cannot remove it without first changing HEAD
+git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/main
+
+# for add auto-complete
+sudo apt-get install git bash-completion
+source /etc/bash_completion
+
+
+
