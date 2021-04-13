@@ -27,4 +27,5 @@ git branch -m master
 # Finally, force update to our repository:
 git push -f origin master
 
-
+# Using the argument -m will transfer all of the commit history on the ‘master’  to new ‘main’ branch so nothing gets lost
+git branch -m master main
