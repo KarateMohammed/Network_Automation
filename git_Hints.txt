@@ -1,0 +1,57 @@
+touch file.txt
+git add 2nd_file.txt
+git commit -m "Commit for Second File"
+git status
+git config credential.helper store  ## to store user and pass so u can enter it one time every while
+git push -u origin master
+git push origin :fix/authentication    ##Delete remote branch
+git branch -d <branch>  ## delete local branch
+git fetch -p  ## "prune". After fetching, branches which no longer exist on the remote will be deleted.
+git branch  -a # show local and remote branches
+sudo git pull origin main   ## to get new updates from github main branch to the branch u r there
+
+git push <remote> <local_branch>:<remote_name>  ## push to different branch on remote
+git switch tqdm  ## switch to tqdm branch
+git merge tqdm   ##  if u r on another branch then u will merge th branch with tqdm (like copy tqdm to the branch)
+git push origin --delete remote_branch  ## delete remote branch
+
+# Check out to a temporary branch:
+git checkout --orphan TEMP_BRANCH
+
+# Add all the files:
+git add -A
+
+# Commit the changes:
+git commit -am "Initial commit"
+
+# Delete the old branch:
+git branch -D master
+
+# Rename the temporary branch to master:
+git branch -m master
+
+# Finally, force update to our repository:
+git push -f origin master
+
+# Using the argument -m will transfer all of the commit history on the ‘master’  to new ‘main’ branch so nothing gets lost
+git branch -m master main
+
+# At this stage if ‘master’ was your default branch you cannot remove it without first changing HEAD
+git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/main
+
+# for add auto-complete
+sudo apt-get install git bash-completion
+source /etc/bash_completion
+
+# Add new branch 
+sudo git checkout -b tqdm
+
+
+
+## Clear main branch history remotely
+sudo git checkout --orphan tmp-master # create a temporary branch
+sudo git add -A  # Add all files and commit them
+sudo git commit -m 'Initial commit'
+sudo git branch -D main # Deletes the master branch
+sudo git branch -m main # Rename the current branch to master
+sudo git push -f origin main # Force push master branch to Git server
