@@ -8,6 +8,7 @@ git push origin :fix/authentication    ##Delete remote branch
 git branch -d <branch>  ## delete local branch
 git fetch -p  ## "prune". After fetching, branches which no longer exist on the remote will be deleted.
 git branch  -a # show local and remote branches
+sudo git pull origin main   ## to get new updates from github main branch to the branch u r thereee
 
 # Check out to a temporary branch:
 git checkout --orphan TEMP_BRANCH
