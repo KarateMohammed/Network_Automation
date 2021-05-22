@@ -59,6 +59,7 @@ ConfigurationTest_Boolen =0
 num_New=[]
 
 All_Hardware_Module_List=[]
+Hardware_IP_Empty_List=[]
 
 Configuration_Output_ID2=''
 Configuration_Output_ID254=''
@@ -74,6 +75,11 @@ with open('/home/khayat/s.txt', 'r') as file:
 		num =file.read().splitlines()
 
 num= list(dict.fromkeys(num))
+
+# with open('/home/khayat/s.txt', 'a') as file:
+# 	for i in num_New:
+# 		file.write((str(i)+"\n"))
+# file.close()
 
 ##############################################################################
 ##################### The main Function of configuration ##################### 
@@ -183,11 +189,10 @@ def ConfigurationTest(ip,Device_Type_Num= 0,User_Pass_Num= 0,Passowrd_Enable_Num
 
 
 						print ("Terminal length \n")
+						## Try this First
 						Configuration_Output=""
 						Configuration_Output=net_connect.send_command_timing("termin len 0"+'\n\n' )
 						# Configuration_Output=net_connect.send_command_timing("show run "+'\n\n'  ,strip_prompt=False,strip_command=False)
-
-
 						# Configuration_Output+=net_connect.send_command_timing("show ip inte br "+'\n\n' ,strip_prompt=False,strip_command=False)
 						# Configuration_Switch=net_connect.send_command_timing("show fex  "+'\n\n' ,strip_prompt=False,strip_command=False)
 						# Configuration_Output+=net_connect.send_command_timing("show cdp neighbors detail "+'\n\n' ,strip_prompt=False,strip_command=False)
@@ -217,28 +222,36 @@ def ConfigurationTest(ip,Device_Type_Num= 0,User_Pass_Num= 0,Passowrd_Enable_Num
 
 
 				###########################################################################################################
-						############################ Use TEXTFSM Template #######################################
+						############################ Use TEXTFSM Template to get Show version ############################
 				###########################################################################################################
-						# Show_Version_TEXTFSM_List=net_connect.send_command_timing("show version "+'\n\n'  ,strip_prompt=False,strip_command=False, use_textfsm=True, textfsm_template="/home/khayat/Textfsm_Templates/cisco_ios_show_version.textfsm")
-						# Test_Expect=net_connect.send_command("show ip inte br "+'\n\n' ,strip_prompt=False,strip_command=False)
-						# print ("\t\tTest_Expect")
-						# print (Test_Expect)
-						Show_Version_TEXTFSM_List=net_connect.send_command_timing("show version "+'\n\n'  ,strip_prompt=False,strip_command=False, use_textfsm=True)
-						Show_Version_TEXTFSM_Dict = Show_Version_TEXTFSM_List[0]  # this is because the output is in list then in Dict 
-						# print (type(Show_Version_TEXTFSM_List))  
-						# print ((Show_Version_TEXTFSM_List))
-						# print (type(Show_Version_TEXTFSM_Dict))
-						# print ((Show_Version_TEXTFSM_Dict))
-						# print ("\n\n\n")
-						# print ("\t\tConfiguration_Output_TEXTFSM")
-						# for k,v in Show_Version_TEXTFSM_Dict.items() :
-						# 	print (f"{k} :: {v}")
+						try :
+							# Show_Version_TEXTFSM_List=net_connect.send_command_timing("show version "+'\n\n'  ,strip_prompt=False,strip_command=False, use_textfsm=True, textfsm_template="/home/khayat/Textfsm_Templates/cisco_ios_show_version.textfsm")
+							# Test_Expect=net_connect.send_command("show ip inte br "+'\n\n' ,strip_prompt=False,strip_command=False)
+							# print ("\t\tTest_Expect")
+							# print (Test_Expect)
+							Show_Version_TEXTFSM_List=net_connect.send_command_timing("show version "+'\n\n'  ,strip_prompt=False,strip_command=False, use_textfsm=True)
+							Show_Version_TEXTFSM_Dict = Show_Version_TEXTFSM_List[0]  # this is because the output is in list then in Dict 
+							# print (type(Show_Version_TEXTFSM_List))  
+							# print ((Show_Version_TEXTFSM_List))
+							# print (type(Show_Version_TEXTFSM_Dict))
+							# print ((Show_Version_TEXTFSM_Dict))
+							# print ("\n\n\n")
+							# print ("\t\tConfiguration_Output_TEXTFSM")
+							# for k,v in Show_Version_TEXTFSM_Dict.items() :
+							# 	print (f"{k} :: {v}")
 
-						Hardware_IP = "\t\t"+str(Show_Version_TEXTFSM_Dict["hardware"][0]) + f"		{ip}___" + str(Show_Version_TEXTFSM_Dict["hostname"])
-						All_Hardware_Module_List.append(Hardware_IP)
+							if Show_Version_TEXTFSM_Dict["hardware"] : 
+								Hardware_IP = "\t\t"+str(Show_Version_TEXTFSM_Dict["hardware"][0]) + f"		{ip}___" + str(Show_Version_TEXTFSM_Dict["hostname"])
+								All_Hardware_Module_List.append(Hardware_IP)
+							else :
+								Hardware_IP_Empty_List.append(ip+"   Hardware Empty")
+							Hostname_Output=ip+".__"+str(Show_Version_TEXTFSM_Dict["hostname"])
 
-						Hostname_Output=ip+".__"+str(Show_Version_TEXTFSM_Dict["hostname"])
-				###########################################################################################################
+						except Exception as e:
+						      print ('Exception in show version\t' +ip)
+						      FailedIps.append(ip+"   Exception in show version")
+
+			###########################################################################################################
 
 
 						# Hostname_Output=net_connect.send_command("show run | i hostname"+'\n\n')
@@ -306,14 +319,33 @@ def ConfigurationTest(ip,Device_Type_Num= 0,User_Pass_Num= 0,Passowrd_Enable_Num
 								print ("After exiting config "+str(ip))
 						print ("After checking config for CDP command\t"+str(ip))
 
-
 				###########################################################################################################
 				##################      Add new IPs from CDP Command     ##################################################
 				###########################################################################################################
 						# CDP_ALL=net_connect.send_command_timing("show cdp neighbors detail | i IP address: "+'\n\n')
 						# print ("\t\tGet_CDP_Neighbors")
 						# num_New = list(num_New) + list(Get_CDP_Neighbors (CDP_ALL , num))
-						
+
+					###############################################################################
+						######################## Using TextFSM for cdp neighbors	
+					###############################################################################
+						# try :	
+						# 	Show_CDP_Details_TEXTFSM_List=net_connect.send_command_timing("show cdp neighbors detail "+'\n\n'  ,strip_prompt=False,strip_command=False, use_textfsm=True)
+						# 	for n in Show_CDP_Details_TEXTFSM_List :
+						# 		Show_CDP_Details_TEXTFSM_Dict = n  # this is because the output is in list then in Dict 
+						# 	# print (type(Show_CDP_Details_TEXTFSM_List))
+						# 	# print (Show_CDP_Details_TEXTFSM_List)
+						# 	# print (type(Show_CDP_Details_TEXTFSM_Dict))
+						# 	# print (Show_CDP_Details_TEXTFSM_Dict)
+						# 	# print (type(Show_CDP_Details_TEXTFSM_Dict["management_ip"]))
+						# 		# print (Show_CDP_Details_TEXTFSM_Dict["management_ip"])
+						# 		if "172." in Show_CDP_Details_TEXTFSM_Dict["management_ip"] :
+						# 			if Show_CDP_Details_TEXTFSM_Dict["management_ip"] not in num and Show_CDP_Details_TEXTFSM_Dict["management_ip"] not in num_New:
+						# 				num_New.append(Show_CDP_Details_TEXTFSM_Dict["management_ip"])
+
+						# except Exception as e:
+						# 	print ('Exception in show cdp neighbors \t' +ip)
+						# 	FailedIps.append(ip+"   Exception in show cdp neighbors ")
 
 				###########################################################################################################
 				################    Example on confirmation message Function
@@ -364,7 +396,7 @@ def ConfigurationTest(ip,Device_Type_Num= 0,User_Pass_Num= 0,Passowrd_Enable_Num
 
 						# Conf_Variables.append(Hostname_Output)
 						# print (Configuration_Output)
-						Conf_Variables.append(Configuration_Output)
+						# Conf_Variables.append(Configuration_Output)
 		############### Search in Configuration if any command error and return its IP ################
 						for y in Conf_Variables:
 								if "% Invalid input detected at '^' marker." in y :
@@ -492,7 +524,7 @@ start_time = datetime.now()
 # ===============================================================================
 
 #####################################################################
-################## Controling nuber of processing  ##################
+################## Controling number of processing  ##################
 #####################################################################
 
 FailedExceptionIps=[]
@@ -504,8 +536,8 @@ for x in num:
 		ConfigurationTest_Boolen==0
 		thread_counter+=1
 		if (thread_counter % 100)==0 :
-			print ("\n\n\nSleep\n\n\n")
-			time.sleep(10)
+			print (f"\n\n\nSleep  {thread_counter}\n\n\n")
+			time.sleep(20)
 			print ("\n\n\nAfter Sleep\n\n\n")
 		print (f"\t\tWe are Processing this IP  {x}\n")
 		try:
@@ -527,30 +559,85 @@ print ("\nAfter Finishing operations on devices\n")
 ###################    Add new IPs and Remove Deplicated IPs   #####################################
 ####################################################################################################
 num_New= list(dict.fromkeys(num_New))  # to Remove Deplicated IPs
+num= list(dict.fromkeys(num))  # to Remove Deplicated IPs
 if len(num_New) != 0 :
 	print ("\n\t\tNew Discovered IPs from cdp neighbors in num_New")
-	print (num_New)
+	# print (num_New)
 	print (f"\n\t\tNumber of New Discovered IPs {len(num_New)}")
 
 #################################################################################
 	######	To ""ADD"" new Discovered IPs in File Called s.txt ######
 #################################################################################
-# with open('s.txt', 'a') as file:
+
+# if os.path.exists("/home/khayat/s.txt"):
+# 	os.remove("/home/khayat/s.txt")
+# else:
+# 	print("The file s does not exist") 
+
+# with open('/home/khayat/s.txt', 'a') as file:
+# 	for i in num:
+# 		file.write((str(i)+"\n"))
 # 	for i in num_New:
 # 		file.write((str(i)+"\n"))
 # file.close()
 
+
+### overwrite on the old file and keep just inactive IPs to iterate it again
+# fullpath = os.path.join("/home/khayat", "s.txt")
+# file1 = codecs.open(fullpath, encoding='utf-8',mode="w+")
+# for i in num:
+# 	file1.write((str(i)+"\n"))
+# for i in num_New:
+# 	file1.write((str(i)+"\n"))	
+# os.chmod("/home/khayat/s.txt", 0o777)  ## to use it with full permisson
+# file1.close()
+
 ##################################################
 
 #################################################################################
-	######	To ""Save"" new Discovered IPs alone in File Called s.txt ######
+	######	To ""Save"" new Discovered IPs alone in a File Called s.txt ######
 #################################################################################
 # #new file for only new IPs
-# with open('s_New.txt', 'a') as file1:
+# if os.path.exists("/home/khayat/s_New.txt"):
+# 	os.remove("/home/khayat/s_New.txt")
+# else:
+# 	print("The file s_New does not exist") 
+
+# with open('/home/khayat/s_New.txt', 'a') as file1:
 #   for i in num_New:
 #       file1.write((str(i)+"\n"))
 # file1.close()
 
+
+# fullpath = os.path.join("/home/khayat", "s_New.txt")
+# file1 = codecs.open(fullpath, encoding='utf-8',mode="w+")
+# for i in num_New:
+# 	file1.write((str(i)+"\n"))
+# os.chmod("/home/khayat/s_New.txt", 0o777)  ## to use it with full permisson
+# file1.close()
+
+##################################################
+
+#################################################################################
+	######	To ""Save"" All Hardware Module  ######
+#################################################################################
+# if os.path.exists("/home/khayat/All_Hardware_Module.txt"):
+# 	os.remove("/home/khayat/All_Hardware_Module.txt")
+# else:
+# 	print("The file All_Hardware_Module does not exist") 
+
+with open('/home/khayat/All_Hardware_Module.txt', 'a') as file:
+	for i in All_Hardware_Module_List:
+		file.write((str(i)+"\n"))
+file.close()
+
+
+# fullpath = os.path.join("/home/khayat", "All_Hardware_Module.txt")
+# file1 = codecs.open(fullpath, encoding='utf-8',mode="w+")
+# for i in All_Hardware_Module_List:
+# 	file1.write((str(i)+"\n"))
+# os.chmod("/home/khayat/All_Hardware_Module.txt", 0o777)  ## to use it with full permisson
+# file1.close()
 
 ####################################################################################################
 	############# To Save File in the same host you have run script on it ##############
@@ -558,10 +645,10 @@ if len(num_New) != 0 :
 # file_counter =0
 # for f in range (0, len(Hostname_Output_list)) :
 # 		file_counter+=1
-# 		if (file_counter % 200)==0 :
-# 			print ("\nsleep\n")
-# 			time.sleep(10)
-# 		fullpath = os.path.join("/home/khayat/Karate_Backup_9", Hostname_Output_list[f]+".txt")
+# 		if (file_counter % 100)==0 :
+# 			print (f"\nsleep {file_counter}\n")
+# 			time.sleep(20)
+# 		fullpath = os.path.join("/home/khayat/Karate_Backup_10", Hostname_Output_list[f]+".txt")
 # 		file1 = codecs.open(fullpath, encoding='utf-8',mode="w+")
 # 		# file1 = codecs.open("/Karate_Backup_8/"+Hostname_Output_list[f]+".txt", encoding='utf-8',mode="w+")
 # 		file1.write(Configuration_Output_list[f])
@@ -667,12 +754,19 @@ if len(num_New)!=0 :
 	print ("\n\t\tNew Discovered IPs from cdp neighbors in num_New")
 	print (num_New)
 	print (f"\n\t\tNumber of New Discovered IPs {len(num_New)}")
+	print (f"\n\t\tNumber of All IPs {len(num)}")
 
-if len(All_Hardware_Module_List)!= 0:
-	print("\n\n\t\tAll Hardware Module List\n")
-	for hardware in All_Hardware_Module_List :
-		print(hardware)
+	############# these are the Hardware module 
+# if len(All_Hardware_Module_List)!= 0:
+# 	print("\n\n\t\tAll Hardware Module List\n")
+# 	for hardware in All_Hardware_Module_List :
+# 		print(hardware)
 
 
-
+	############# these are the empty Hardware module in the show version 
+if len(Hardware_IP_Empty_List)!=0:
+	print ("\n\t\tHardware Empty IPs")
+	for c in Hardware_IP_Empty_List :
+		print(c)
+	print (f"\n\t\tNumber of All Hardware Empty IPs {len(Hardware_IP_Empty_List)}")
 

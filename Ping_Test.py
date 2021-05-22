@@ -1,6 +1,7 @@
 # typo error in import
 import subprocess
 import os
+import os.path
 import codecs
 
 import threading
@@ -8,8 +9,9 @@ from multiprocessing.dummy import Pool as ThreadPool
 import time
 
 
-with open('d.txt', 'r') as file:
+with open('/home/khayat/d.txt', 'r') as file:
 		num =file.read().splitlines()
+file.close()
 
 num= list(dict.fromkeys(num))
 num_len=len(num)
@@ -59,8 +61,8 @@ for x in num:
 			print (f"Continue it's empty {x}")
 			continue
 		counter+=1
-		if (counter % 100)==0 :
-			print ("\n\n\n\nsleep\n\n\n\n")
+		if (counter % 10)==0 :
+			print (f"\n\n\n\nsleep {counter}\n\n\n\n")
 			time.sleep(10)
 		print (f"\t\tWe are Processing this IP  {x}")
 		try:
@@ -76,16 +78,25 @@ for some_thread in threading.enumerate():
 				some_thread.join()
 
 
- # new file for only new IPs
-with open('active.txt', 'a') as file1:
+ # new file for only new IPs , aslo to update old active file in case or loop repeatation
+with open('/home/khayat/active.txt', 'a') as file1:
 	for i in active:
 		file1.write((str(i)+"\n"))
 file1.close()
 
-with open('inactive.txt', 'a') as file2:
-	for i in inactive:
-		file2.write((str(i)+"\n"))
-file2.close()
+with open('/home/khayat/s.txt', 'a') as file1:
+	for i in active:
+		file1.write((str(i)+"\n"))
+file1.close()
+
+
+### overwrite on the old file and keep just inactive IPs to iterate it again
+fullpath = os.path.join("/home/khayat", "d.txt")
+file1 = codecs.open(fullpath, encoding='utf-8',mode="w+")
+for i in inactive:
+	file1.write((str(i)+"\n"))
+os.chmod("/home/khayat/d.txt", 0o777)  ## to use it with full permisson
+file1.close()
 
 
 print ("Failed_IP")
@@ -106,3 +117,5 @@ print(f"\n length of FailedExceptionIps {len(FailedExceptionIps)}")
 
 result_sum =len(active) +len(inactive) +len(Failed_IP) +len(FailedExceptionIps)
 print (f"\n result_sum is {str(result_sum)}")
+
+# Mohammed
