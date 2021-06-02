@@ -7,6 +7,7 @@ import codecs
 import threading
 from multiprocessing.dummy import Pool as ThreadPool
 import time
+from Useful_Fun import *  ### my Class of Functions
 
 
 with open('/home/khayat/d.txt', 'r') as file:
@@ -20,6 +21,7 @@ active=[]
 inactive=[]
 Failed_IP =[]
 FailedExceptionIps=[]
+
 def Ping_Test(num) :
 	# with open(os.devnull, "wb") as limbo:
 		ip= num
@@ -37,7 +39,7 @@ def Ping_Test(num) :
 			print (f"Exception {e} for IP {ip}")
 			Failed_IP.append(ip)
 
-# def Ping_Test(num) :
+# def Ping_Test(num) :  ## ping without getting output on the Screen
 # 	with open(os.devnull, "wb") as limbo:
 # 		# for n in num:
 # 		ip= num
@@ -54,7 +56,7 @@ def Ping_Test(num) :
 # 			print (f"Exception {e} for IP {ip}")
 # 			Failed_IP.append(ip)
 
-# num=["172.22.22.22","172.100.130.58"]
+# num=["172.0.0.22","172.0.0.10"]
 counter=0
 for x in num:
 		if not x :
@@ -71,6 +73,10 @@ for x in num:
 		except Exception:
 				FailedExceptionIps.append(num[x])
 
+# Validate IP Schema
+num=Validate_List_ip (num)
+
+## Main Threading
 main_thread = threading.currentThread()
 for some_thread in threading.enumerate():
 		if some_thread != main_thread:
@@ -84,6 +90,7 @@ with open('/home/khayat/active.txt', 'a') as file1:
 		file1.write((str(i)+"\n"))
 file1.close()
 
+# Add active IPs to s File to use it in Automation Script
 with open('/home/khayat/s.txt', 'a') as file1:
 	for i in active:
 		file1.write((str(i)+"\n"))
