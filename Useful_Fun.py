@@ -72,7 +72,7 @@ def Get_Ports_Status (List_of_Lines=[]):
 ##################### The Get_CDP_Neighbors Function  ##################### 
 ##############################################################################
 
-def Get_CDP_Neighbors (CDP_ALL_string="" , Old_IP_list=[]) :
+def Get_CDP_Neighbors (CDP_ALL_string="" , Old_IP_list=[],Pattern_Filter_in_CDP='') :
 
 	CDP_Lines_List=CDP_ALL_string.splitlines()  # change output to list of lines
 	CDP_IPs_List=[]
@@ -84,7 +84,7 @@ def Get_CDP_Neighbors (CDP_ALL_string="" , Old_IP_list=[]) :
 
 	# check on each ip if it's in the mangement range or not and append it to new list if it's not exsit in the IPs list
 	for i in CDP_IPs_List :
-		if "172" in i :
+		if Pattern_Filter_in_CDP in i :
 			# check on the IP to add it to the list
 			if i not in Old_IP_list :
 				New_IPs_list.append(i)
@@ -158,6 +158,44 @@ def Validate_List_ip(ip_List) :
 	return ip_List
 
 
+####################################################################################################
+###################    Add new IPs and Remove Deplicated IPs   #####################################
+####################################################################################################
+def Remove_Deplicated_In_List (UnFiltered_List=[]) :
+	UnFiltered_List= list(dict.fromkeys(UnFiltered_List))  # to Remove Deplicated IPs
+	return UnFiltered_List
+
+
+
+####################################################################################################
+###################    Add new IPs and Remove Deplicated IPs   #####################################
+####################################################################################################
+def Overwrite_Old_File(path='' ,file_name='',Unknown_Lists=[] ) :
+### overwrite on the old file and keep just inactive IPs to iterate it again
+	if not os.path.exists(path):
+		os.mkdir(path)
+		print("Directory " , path ,  " Created ")
+	else:
+		print("Directory " , path ,  " already exists")
+	fullpath = os.path.join(path, file_name)
+	file1 = codecs.open(fullpath, encoding='utf-8',mode="w+")
+	for i in Unknown_Lists :
+		file1.write((str(i)+"\n"))
+	os.chmod(fullpath, 0o777)  ## to use it with full permisson
+	file1.close()
+
+
+###########################################################
+		########## Add List to File ####
+###########################################################
+def Append_to_Old_File(fullpath='' ,Unknown_Lists=[]) :
+	with open(fullpath, 'a') as file:
+		for i in Unknown_Lists:
+			file.write((str(i)+"\n"))
+	os.chmod(fullpath, 0o777)  ## to use it with full permisson
+	file.close()
+
+
 ##############################################################################
 ##################### The SCP Function of configuration ##################### 
 ##############################################################################
@@ -182,4 +220,56 @@ def loginandcopy(hostname='10.231.0.84',uname='khyat',pwd='P@ssw0rd',sfile='a1.p
 		except scp.SCPException as e:
 				print("Operation error: %s", e) 
 # loginandcopy('10.231.0.84','khyat','P@ssw0rd','a1.py','a1.py')
+
+
+
+
+##################################################################################################
+############### Thread For SCP to send and save file to on remote linux server ######################
+##################################################################################################
+# for x in Hostname_Output_list:
+#       try:
+#               # X is text that  you want to save , x+'.txt' is filename 
+#               z=x+".txt"
+#               my_thread2 = threading.Thread(target=loginandcopy, args=('172.100.130.110','root','toor',z,(z)))
+#               # my_thread2 = threading.Thread(target=loginandcopy, args=('172.100.130.171','root','toor',(x),(x+'.txt')))
+#               my_thread2.start()
+#       except Exception:
+#               print (" Thread Of Copying\t"+ x+"\n")
+# main_thread = threading.currentThread()
+# for some_thread in threading.enumerate():
+#       if some_thread != main_thread:
+#               print(some_thread)
+#               some_thread.join()
+
+
+		# subprocess.call(["rm",z ])
+
+
+# subprocess.call(["rm", Global_Output[0]])
+# loginandcopy('10.231.0.84','khyat','P@ssw0rd',Global_Output[0],Global_Output[0])
+# loginandcopy('172.100.130.171','root','toor',"Karate.txt","Karate.txt")
+# FileNameRm ="Karate"+".txt"
+
+# for n in Hostname_Output_list:
+#       try:
+#               # X is text that  you want to save , x+'.txt' is filename 
+#               m=n+".txt"
+#               my_thread2 = threading.Thread(target=subprocess.call, args=('rm',m,(m)))
+#               my_thread2.start()
+#       except Exception:
+#               print (" Thread Of Deleting\t"+ n+"\n")
+# main_thread = threading.currentThread()
+# for some_thread in threading.enumerate():
+#       if some_thread != main_thread:
+#               print(some_thread)
+#               some_thread.join()
+
+# for n in Hostname_Output_list: 
+#       m=n+".txt"
+#       subprocess.call(["rm",m ])
+
+# for y in Hostname_Output_list :
+#       FileNameRm=y+".txt"
+#       subprocess.call(["rm",FileNameRm ])
 

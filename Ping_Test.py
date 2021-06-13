@@ -8,9 +8,24 @@ import threading
 from multiprocessing.dummy import Pool as ThreadPool
 import time
 from Useful_Fun import *  ### my Class of Functions
+from Global_Variables import Global_Variables ## Call Class to set or Use global Variables
+
+# ===============================================================
+# ===============================================================
+
+Class_of_Global_Variables=Global_Variables()
+
+Directory_Path = Class_of_Global_Variables.Directory_Path
+Source_IPs_File = Class_of_Global_Variables.Source_IP_File_for_Ping
+Worked_and_Old_IPs_File = Class_of_Global_Variables.Pinged_New_and_Old_IP_File
+Pass_IPs_to_File = Class_of_Global_Variables.Source_IP_File_for_Automation
+
+# ===============================================================
+# ===============================================================
 
 
-with open('/home/khayat/d.txt', 'r') as file:
+fullpath_to_sourceIP=Directory_Path+'/'+Source_IPs_File
+with open(fullpath_to_sourceIP, 'r') as file:
 		num =file.read().splitlines()
 file.close()
 
@@ -57,11 +72,16 @@ def Ping_Test(num) :
 # 			Failed_IP.append(ip)
 
 # num=["172.0.0.22","172.0.0.10"]
+
+
+# Validate IP Schema
+num=Validate_List_ip (num)
+
 counter=0
 for x in num:
-		if not x :
-			print (f"Continue it's empty {x}")
-			continue
+		# if not x :
+		# 	print (f"Continue it's empty {x}")
+		# 	continue
 		counter+=1
 		if (counter % 10)==0 :
 			print (f"\n\n\n\nsleep {counter}\n\n\n\n")
@@ -73,8 +93,6 @@ for x in num:
 		except Exception:
 				FailedExceptionIps.append(num[x])
 
-# Validate IP Schema
-num=Validate_List_ip (num)
 
 ## Main Threading
 main_thread = threading.currentThread()
@@ -85,44 +103,36 @@ for some_thread in threading.enumerate():
 
 
  # new file for only new IPs , aslo to update old active file in case or loop repeatation
-with open('/home/khayat/active.txt', 'a') as file1:
-	for i in active:
-		file1.write((str(i)+"\n"))
-file1.close()
+fullpath=Directory_Path+'/'+Worked_and_Old_IPs_File
+Append_to_Old_File(fullpath=fullpath ,Unknown_Lists=active)
+
 
 # Add active IPs to s File to use it in Automation Script
-with open('/home/khayat/s.txt', 'a') as file1:
-	for i in active:
-		file1.write((str(i)+"\n"))
-file1.close()
+fullpath=Directory_Path+'/'+Pass_IPs_to_File
+Append_to_Old_File(fullpath=fullpath ,Unknown_Lists=active)
+
 
 
 ### overwrite on the old file and keep just inactive IPs to iterate it again
-fullpath = os.path.join("/home/khayat", "d.txt")
-file1 = codecs.open(fullpath, encoding='utf-8',mode="w+")
-for i in inactive:
-	file1.write((str(i)+"\n"))
-os.chmod("/home/khayat/d.txt", 0o777)  ## to use it with full permisson
-file1.close()
+Overwrite_Old_File(path=Directory_Path ,file_name=Source_IPs_File,Unknown_Lists=inactive )
+
 
 
 print ("Failed_IP")
 for i in Failed_IP :
 	print (f"Failed_IP {i}")
 
-
-
 print ("\n\nFailedExceptionIps")
 for i in FailedExceptionIps :
 	print (f"FailedExceptionIps {i}")
 
-print(f"\n\n length of num {num_len}")
-print(f"\n length of active {len(active)}")
-print(f"\n length of inactive {len(inactive)}")
-print(f"\n length of Failed_IP {len(Failed_IP)}")
-print(f"\n length of FailedExceptionIps {len(FailedExceptionIps)}")
+print(f"\n\n length of num :{num_len}")
+print(f"\n length of active :{len(active)}")
+print(f"\n length of inactive :{len(inactive)}")
+print(f"\n length of Failed_IP :{len(Failed_IP)}")
+print(f"\n length of FailedExceptionIps :{len(FailedExceptionIps)}")
 
 result_sum =len(active) +len(inactive) +len(Failed_IP) +len(FailedExceptionIps)
-print (f"\n result_sum is {str(result_sum)}")
+print (f"\n result_sum is :{str(result_sum)}")
 
 # Mohammed

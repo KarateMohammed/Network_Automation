@@ -1,5 +1,6 @@
 touch file.txt
 git add 2nd_file.txt
+git remote add origin https://github.com/username/new_repo 	## add new Repository
 git commit -m "Commit for Second File"
 git status
 git config credential.helper store  ## to store user and pass so u can enter it one time every while
