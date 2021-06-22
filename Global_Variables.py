@@ -8,8 +8,11 @@ class Global_Variables:
 	FailedIPs_Cumulative_File ="FailedIPs_Cumulative.txt"
 	Finished_IPs_Old_File="Worked_IPs_Old.txt"
 	New_Discovered_IPs_File="s_New.txt"
+	New_Dict_IPs_File="Dict_IPs.json"
 	Hardware_Modules_File="All_Hardware_Module_Test_1.txt"
 	Sub_Directory_Path_for_Backup="/home/khayat/Test_New_Auto"
+	# Dict_all_IP_Usr_Pass_Ena={"ip":{"Connection_type":'',"k_Username":'',"k_Password":'',"k_Enable":''}}
+	Dict_all_IP_Usr_Pass_Ena={}
 	def __init (
 		self,
 		Directory_Path=Directory_Path,
@@ -33,4 +36,5 @@ class Global_Variables:
 		self.New_Discovered_IPs_File=New_Discovered_IPs_File,
 		self.Hardware_Modules_File=Hardware_Modules_File,
 		self.Sub_Directory_Path_for_Backup=Sub_Directory_Path_for_Backup
-
+		self.Dict_all_IP_Usr_Pass_Ena=Dict_all_IP_Usr_Pass_Ena
+		self.New_Dict_IPs_File=New_Dict_IPs_File

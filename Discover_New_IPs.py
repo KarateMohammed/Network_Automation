@@ -90,7 +90,8 @@ Worked_IPs_Old_File = Class_of_Global_Variables.Finished_IPs_Old_File
 New_Discovered_IPs_File =  Class_of_Global_Variables.New_Discovered_IPs_File
 Hardware_Modules_File = Class_of_Global_Variables.Hardware_Modules_File
 Sub_Directory_Path_for_Backup = Class_of_Global_Variables.Sub_Directory_Path_for_Backup
-
+Dict_all_IP_Usr_Pass_Ena=Class_of_Global_Variables.Dict_all_IP_Usr_Pass_Ena
+New_Dict_IPs_File=Class_of_Global_Variables.New_Dict_IPs_File
 ##################################################################
 ####################### Get Source IPs from file ##########################
 ##################################################################
@@ -202,10 +203,60 @@ def ConfigurationTest(ip,Device_Type_Num= 0,User_Pass_Num= 0,Passowrd_Enable_Num
 		######################################################################
 		################ Here Is The Cisco Configuration  ####################
 		######################################################################
+						# Dict_Path=Directory_Path+'/'+New_Dict_IPs_File
+						
 						print ("check enable mode for "+str(ip))
 						if not net_connect.check_enable_mode() :
-								net_connect.enable()
-								print ("entered enable mode for "+str(ip))
+							net_connect.enable()
+							# Temp_Dict_k_Enable={"k_Enable" :Passowrd_Device_Enable[Passowrd_Enable_Num]}
+							print ("entered enable mode for "+str(ip))
+						# else :
+						# 	Temp_Dict_k_Enable={"k_Enable" :''}
+
+						# Temp_Dict_k_ip={}
+						# Temp_Dict_k_ip[ip]={}
+						# Temp_Dict_Connection_type={"Connection_type":Device_Type[Device_Type_Num]}
+						# Temp_Dict_k_Username={"k_Username":Username_Device[User_Pass_Num]}
+						# Temp_Dict_k_Password={"k_Password":Passowrd_Device[User_Pass_Num]}
+
+
+						# Temp_Dict_k_ip[ip].update(Temp_Dict_Connection_type)
+						# Temp_Dict_k_ip[ip].update(Temp_Dict_k_Username)
+						# Temp_Dict_k_ip[ip].update(Temp_Dict_k_Password)
+						# Temp_Dict_k_ip[ip].update(Temp_Dict_k_Enable)
+						# Dict_all_IP_Usr_Pass_Ena.update(Temp_Dict_k_ip)
+						# print (f"Dict_all_IP_Usr_Pass_Ena[{ip}]")
+						# print (Dict_all_IP_Usr_Pass_Ena[ip])
+						# Temp_Dict_k_ip.popitem()
+						# print("After POP Temp_Dict_k_ip")
+						# print(Temp_Dict_k_ip)
+
+						# Temp_Dict_fake_Key= [*Temp_Dict_fake.keys()]
+
+
+						# with open(Dict_Path) as convert_file:
+						# 	data=convert_file.read()
+						# convert_file.close()
+						# os.chmod(fullpath, 0o777)  ## to use it with full permisson
+						# data=json.loads(data)
+						# print("Dict:", data)
+						# print("Type:", type(data))
+
+						# if not Temp_Dict_fake_Key[0] in Dict_all_IP_Usr_Pass_Ena.keys():
+						# 	print("A new Key ")
+						# 	print("Temp_Dict_fake.keys()")
+						# 	print(Temp_Dict_fake.keys())
+
+						# 	data=json.dumps(Temp_Dict_fake)
+						# 	with open(Dict_Path, 'a') as convert_file:
+						# 		convert_file.write(data)
+						# 	os.chmod(fullpath, 0o777)  ## to use it with full permisson
+						# 	convert_file.close()
+
+						# else :
+						# 	print("An old Key ")
+
+
 
 				##################################################################
 				########### Check if in config mode or not to exit config mode
@@ -609,7 +660,6 @@ def Start_Threads() :
 	num=Remove_Deplicated_In_List (num)	# to Remove Deplicated IPs
 	if len(num_New) != 0 :
 		print ("\n\t\tNew Discovered IPs from cdp neighbors in num_New")
-		# print (num_New)
 		print (f"\n\t\tNumber of New Discovered IPs {len(num_New)}")
 
 	#################################################################################
@@ -712,6 +762,9 @@ def Start_Threads() :
 	print(f"\n\t\tLength of the Hostname_Output_list IPs {len(Hostname_Output_list)}")
 	print(f"\n\t\tLength of the IPs in the num  {len(num)}")
 
+
+	print('\n\t\tDict_all_IP_Usr_Pass_Ena')
+	print(Dict_all_IP_Usr_Pass_Ena)
 		############# these are the Hardware module 
 	# if len(All_Hardware_Module_List)!= 0:
 	# 	print("\n\n\t\tAll Hardware Module List\n")

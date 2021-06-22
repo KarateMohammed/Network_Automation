@@ -2,7 +2,7 @@ import os
 import time
 
 
-for i in range (1) :
+for i in range (2) :
 	print ("########################################################################")
 	print(f"START  {i+1}\n")
 	os.system('python3 /home/khayat/Automation/Ping_Test.py')
