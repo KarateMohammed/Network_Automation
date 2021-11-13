@@ -9,7 +9,7 @@ for i in range (2) :
 	print(f"END  {i+1}")
 	print ("########################################################################")
 	print (f"sleep {i+1} \n")
-	time.sleep(2)
+	time.sleep(6)
 
 print ("\n\n\n Ping Test is finishined let's take a break and Continue to Automation Script ^_^ \n\n\n\n")
 time.sleep(2)
@@ -20,5 +20,5 @@ for i in range (2) :
 	print(f"END  {i+1}")
 	print ("########################################################################")
 	print (f"sleep {i+1} \n")
-	time.sleep(2)
+	time.sleep(6)
 
