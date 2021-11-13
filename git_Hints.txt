@@ -5,6 +5,8 @@ git commit -m "Commit for Second File"
 git status
 git config credential.helper store  ## to store user and pass so u can enter it one time every while
 git push https://{token}@github.com/KarateMohammed/Network_Automation.git
+use token instead of writting pass in pass field 
+
 
 git push -u origin master
 git push origin :fix/authentication    ##Delete remote branch
