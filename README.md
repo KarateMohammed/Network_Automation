@@ -1,6 +1,15 @@
 # Network_Automation
 Network Automation  for traditional network
 
+
+
+Things you need to do before running scripts :: 
+----------------------------
+1- set username . password and enable password
+2- set Directory_Path in global variables file
+3- set number of iteration in Loop_Scripts
+4- set Pattern_Filter_in_CDP in Discover_New_IPs.py
+
 Loop_Scripts :: 
 ----------------------------
  execute scripts many times
@@ -13,6 +22,6 @@ Loop_Scripts ::
 
  	Second	:: Discover_New_IPs
 
- 				
+
 
 

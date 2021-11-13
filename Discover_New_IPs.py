@@ -95,15 +95,18 @@ New_Dict_IPs_File=Class_of_Global_Variables.New_Dict_IPs_File
 ##################################################################
 ####################### Get Source IPs from file ##########################
 ##################################################################
+print("Before num Full_Source_Path")
 Full_Source_Path=Directory_Path+"/"+Source_IPs_File
 with open(Full_Source_Path, 'r') as file:
 		num =file.read().splitlines()
 num= Remove_Deplicated_In_List(num)
+print("After Full_Source_Path")
 
 
 # ================================================================
 ####################### Get Old Worked IPs from file #################
 # ================================================================
+print("Before num Full_Source_Path")
 Full_Source_Path=Directory_Path+"/"+Worked_IPs_Old_File
 with open(Full_Source_Path, 'r') as file:
 		Worked_IPs_Old =file.read().splitlines()
@@ -274,34 +277,40 @@ def ConfigurationTest(ip,Device_Type_Num= 0,User_Pass_Num= 0,Passowrd_Enable_Num
 						## Try this First
 						Configuration_Output=""
 						Configuration_Output=net_connect.send_command_timing("termin len 0"+'\n\n' )
-						# Configuration_Output=net_connect.send_command_timing("show run "+'\n\n'  ,strip_prompt=False,strip_command=False)
-						# Configuration_Output+=net_connect.send_command_timing("show ip inte br "+'\n\n' ,strip_prompt=False,strip_command=False)
-						# Configuration_Switch=net_connect.send_command_timing("show fex  "+'\n\n' ,strip_prompt=False,strip_command=False)
-						# Configuration_Output+=net_connect.send_command_timing("show cdp neighbors detail "+'\n\n' ,strip_prompt=False,strip_command=False)
-						# Configuration_Switch+=net_connect.send_command_timing("show interfaces status  "+'\n\n' ,strip_prompt=False,strip_command=False)
-						# Configuration_Output+=net_connect.send_command_timing("show inter desc "+'\n\n' ,strip_prompt=False,strip_command=False)
-						# Configuration_Router=net_connect.send_command_timing("show ip ospf neighbor "+'\n\n' ,strip_prompt=False,strip_command=False)
-						# Configuration_Output+=net_connect.send_command_timing("show version "+'\n\n' ,strip_prompt=False,strip_command=False)
-						# Configuration_Output+=net_connect.send_command_timing("show cdp neighbors "+'\n\n' ,strip_prompt=False,strip_command=False)
-						################### for ARP ###############################################################
-					######################################################################
 
-						# Configuration_Output_ID2=net_connect.send_command_timing("show ip arp vrf ID2 "+'\n\n'  ,strip_prompt=False,strip_command=False)
-						# Configuration_Output_ID254=net_connect.send_command_timing("show ip arp vrf ID254 "+'\n\n'  ,strip_prompt=False,strip_command=False)
-					######################################################################
+						##### it's here to check if it exists in old worked ip file and to add it to list to append it later to old worked ip
+						##### this if is for not creating file since it's already a worked up just do the discover cdp for it
+						if ip not in Worked_IPs_Old :
+							print(f"IP {ip} not in Old Worked IPs excute the commands")
+							# Configuration_Output=net_connect.send_command_timing("show run "+'\n\n'  ,strip_prompt=False,strip_command=False)
+							# Configuration_Output+=net_connect.send_command_timing("show ip inte br "+'\n\n' ,strip_prompt=False,strip_command=False)
+							# Configuration_Switch=net_connect.send_command_timing("show fex  "+'\n\n' ,strip_prompt=False,strip_command=False)
+							# Configuration_Output+=net_connect.send_command_timing("show cdp neighbors detail "+'\n\n' ,strip_prompt=False,strip_command=False)
+							# Configuration_Switch+=net_connect.send_command_timing("show interfaces status  "+'\n\n' ,strip_prompt=False,strip_command=False)
+							# Configuration_Output+=net_connect.send_command_timing("show inter desc "+'\n\n' ,strip_prompt=False,strip_command=False)
+							# Configuration_Router=net_connect.send_command_timing("show ip ospf neighbor "+'\n\n' ,strip_prompt=False,strip_command=False)
+							# Configuration_Output+=net_connect.send_command_timing("show version "+'\n\n' ,strip_prompt=False,strip_command=False)
+							# Configuration_Output+=net_connect.send_command_timing("show cdp neighbors "+'\n\n' ,strip_prompt=False,strip_command=False)
+							################### for ARP ###############################################################
+						######################################################################
 
-						
-						# Configuration_Output=net_connect.send_command_timing("termin len 0"+'\n\n',delay_factor=5)
-						# Configuration_Output=net_connect.send_command_timing("show run "+'\n\n' ,delay_factor=5,strip_prompt=False,strip_command=False)
-						# Configuration_Output+=net_connect.send_command_timing("show ip inte br "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
-						# Configuration_Switch=net_connect.send_command_timing("show fex  "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
-						# Configuration_Output+=net_connect.send_command_timing("show cdp neighbors detail "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
-						# Configuration_Switch+=net_connect.send_command_timing("show interfaces status  "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
-						# Configuration_Output+=net_connect.send_command_timing("show inter desc "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
-						# Configuration_Router=net_connect.send_command_timing("show ip ospf neighbor "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
-						# Configuration_Output+=net_connect.send_command_timing("show version "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
-						# Configuration_Output+=net_connect.send_command_timing("show cdp neighbors "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
+							# Configuration_Output_ID2=net_connect.send_command_timing("show ip arp vrf ID2 "+'\n\n'  ,strip_prompt=False,strip_command=False)
+							# Configuration_Output_ID254=net_connect.send_command_timing("show ip arp vrf ID254 "+'\n\n'  ,strip_prompt=False,strip_command=False)
+						######################################################################
 
+							
+							# Configuration_Output=net_connect.send_command_timing("termin len 0"+'\n\n',delay_factor=5)
+							# Configuration_Output=net_connect.send_command_timing("show run "+'\n\n' ,delay_factor=5,strip_prompt=False,strip_command=False)
+							# Configuration_Output+=net_connect.send_command_timing("show ip inte br "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
+							# Configuration_Switch=net_connect.send_command_timing("show fex  "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
+							# Configuration_Output+=net_connect.send_command_timing("show cdp neighbors detail "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
+							# Configuration_Switch+=net_connect.send_command_timing("show interfaces status  "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
+							# Configuration_Output+=net_connect.send_command_timing("show inter desc "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
+							# Configuration_Router=net_connect.send_command_timing("show ip ospf neighbor "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
+							# Configuration_Output+=net_connect.send_command_timing("show version "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
+							# Configuration_Output+=net_connect.send_command_timing("show cdp neighbors "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
+						else :
+							print (f"IP {ip} in Worked Old IPs don't excute the commands")
 
 				###########################################################################################################
 						############################ Use TEXTFSM Template to get Show version ############################
@@ -328,6 +337,8 @@ def ConfigurationTest(ip,Device_Type_Num= 0,User_Pass_Num= 0,Passowrd_Enable_Num
 							else :
 								Hardware_IP_Empty_List.append(ip+"   Hardware Empty")
 							Hostname_Output=ip+".__"+str(Show_Version_TEXTFSM_Dict["hostname"])
+														
+							##### it's here to check if it exists in old worked ip file and to add it to list to append it later to old worked ip
 							if ip not in Worked_IPs_Old : 
 								print(f"IP not in Worked_IPs_Old :: {ip}")
 								Worked_IPs_Now.append(ip)
@@ -485,7 +496,14 @@ def ConfigurationTest(ip,Device_Type_Num= 0,User_Pass_Num= 0,Passowrd_Enable_Num
 								if "% Invalid input detected at '^' marker." in y :
 										FailedIps.append(ip+"   Invalid input")
 #########################################################################################################
-						Hostname_Output_list.append(Hostname_Output)
+						##### this if is for not creating file since it's already a worked up just do the discover cdp for it
+						if ip not in Worked_IPs_Old :
+							print (f"IP {ip} not in worked IP append hostname")
+							Hostname_Output_list.append(Hostname_Output)
+						else :
+							print (f"IP  {ip} in worked IP don't append hostname")
+
+
 						test=Configuration_Switch
 						test+= Configuration_Output
 						test+=Configuration_Router
@@ -628,8 +646,11 @@ def Start_Threads() :
 	thread_counter=0
 
 	num=Validate_List_ip (num) 	## Call Validate Function to remove unvalid IPs 
-
+	print("After Validating num LIST\n")
+	print(f"After Validating num List {num}\n")
 	for x in num:
+			print("inside main loop\n")
+
 			ConfigurationTest_Boolen==0
 			thread_counter+=1
 			if (thread_counter % 100)==0 :
@@ -680,6 +701,8 @@ def Start_Threads() :
 	#############################################################################################################################
 	print("Worked_IPs_Now Before append To File")
 	print(Worked_IPs_Now)
+	print("Worked_IPs_Old")
+	print(Worked_IPs_Old)
 	Append_to_Old_File(fullpath=Directory_Path+"/"+Worked_IPs_Old_File ,Unknown_Lists=Worked_IPs_Now)
 
 	##################################################################################################################################################################
