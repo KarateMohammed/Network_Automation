@@ -22,7 +22,9 @@ Pass_IPs_to_File = Class_of_Global_Variables.Source_IP_File_for_Automation
 
 # ===============================================================
 # ===============================================================
-
+print("\n\n==============================================")
+print ("Welcome to Ping_Test Script")
+print("==============================================\n\n")
 
 fullpath_to_sourceIP=Directory_Path+'/'+Source_IPs_File
 with open(fullpath_to_sourceIP, 'r') as file:
@@ -31,7 +33,7 @@ file.close()
 
 num= list(dict.fromkeys(num))
 num_len=len(num)
-
+print(f"\n Num length {num_len} is no Validated yet")
 active=[]
 inactive=[]
 Failed_IP =[]
@@ -45,10 +47,10 @@ def Ping_Test(num) :
 			print ("Result")
 			print (result)
 			if result:
-				print (ip, "inactive")
+				print (ip, "   :( inactive :( ")
 				inactive.append(ip)
 			else:
-				print (ip, "active")
+				print (ip, "  ^_^ active ^_^")
 				active.append(ip)
 		except Exception as e :
 			print (f"Exception {e} for IP {ip}")
@@ -75,7 +77,9 @@ def Ping_Test(num) :
 
 
 # Validate IP Schema
+print("\nValidate_List_ip for NUM")
 num=Validate_List_ip (num)
+print(f"\n Num length {len(num)} is  Validated ^_^ ")
 
 counter=0
 for x in num:
@@ -83,7 +87,7 @@ for x in num:
 		# 	print (f"Continue it's empty {x}")
 		# 	continue
 		counter+=1
-		if (counter % 10)==0 :
+		if (counter % 50)==0 :
 			print (f"\n\n\n\nsleep {counter}\n\n\n\n")
 			time.sleep(10)
 		print (f"\t\tWe are Processing this IP  {x}")

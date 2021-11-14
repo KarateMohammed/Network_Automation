@@ -9,6 +9,8 @@ Things you need to do before running scripts ::
 2- set Directory_Path in global variables file
 3- set number of iteration in Loop_Scripts
 4- set Pattern_Filter_in_CDP in Discover_New_IPs.py
+5- set All_Hardware_Module_Test_1 in Global variables
+
 
 Loop_Scripts :: 
 ----------------------------

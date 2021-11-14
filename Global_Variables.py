@@ -9,8 +9,8 @@ class Global_Variables:
 	Finished_IPs_Old_File="Worked_IPs_Old.txt"
 	New_Discovered_IPs_File="s_New.txt"
 	New_Dict_IPs_File="Dict_IPs.json"
-	Hardware_Modules_File="All_Hardware_Module_Test_1.txt"
-	Sub_Directory_Path_for_Backup="/home/khayat/Test_New_Auto"
+	Hardware_Modules_File="All_Hardware_Module_11.txt"
+	Sub_Directory_Path_for_Backup="/home/khayat/Karate_Backup_11"
 	# Dict_all_IP_Usr_Pass_Ena={"ip":{"Connection_type":'',"k_Username":'',"k_Password":'',"k_Enable":''}}
 	Dict_all_IP_Usr_Pass_Ena={}
 	def __init (
