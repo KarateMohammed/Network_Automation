@@ -188,7 +188,14 @@ def Overwrite_Old_File(path='' ,file_name='',Unknown_Lists=[] ) :
 ###########################################################
 		########## Add List to File ####
 ###########################################################
-def Append_to_Old_File(fullpath='' ,Unknown_Lists=[]) :
+
+def Append_to_Old_File(path='' ,file_name='',Unknown_Lists=[]) :
+	if not os.path.exists(path):
+		os.mkdir(path)
+		print("Directory " , path ,  " Created ")
+	else:
+		print("Directory " , path ,  " already exists")
+	fullpath = os.path.join(path, file_name)
 	with open(fullpath, 'a') as file:
 		for i in Unknown_Lists:
 			file.write((str(i)+"\n"))

@@ -9,6 +9,7 @@
 # path for ntc-templates TestFSM /usr/local/lib/python3.8/dist-packages/ntc_templates/templates/ 
 #export NET_TEXTFSM=/usr/local/lib/python3.8/dist-packages/ntc_templates/templates/
 
+
 import threading
 from datetime import datetime
 from netmiko import ConnectHandler
@@ -45,15 +46,10 @@ import subprocess
 # Device_Type=[ 'cisco_ios','cisco_ios_telnet']
 Device_Type=[ 'cisco_ios_telnet','cisco_ios']
 
-Passowrd_Device_Enable=["barkotel","cisco","Moi@Pcd123","p@ssw0rd@cisco2018"]
-Username_Device=["m.essam","gen1","see","cisco","gen2","moi"]
-Passowrd_Device=["totatota2017","Gen1Hq1","cisco","cisco","Gen2Hq2","barkotel"]
 
-
-
-# Username_Device=["cisco"]
-# Passowrd_Device=["cisco"]
-# Passowrd_Device_Enable=["cisco","cs"]
+Username_Device=["cisco"]
+Passowrd_Device=["cisco"]
+Passowrd_Device_Enable=["cisco","cs"]
 
 Global_Output=[]
 Hostname_Output_list=[]
@@ -68,7 +64,7 @@ Worked_IPs_Now=[] ## For not repeating Old worked IPs
 count=0
 ConfigurationTest_Boolen =0 	## to Return from Recursion
 num_New=[]						## for New IPs
-Pattern_Filter_in_CDP= "172."	## Pattern to filter in cdp neighbor command
+Pattern_Filter_in_CDP= "192."	## Pattern to filter in cdp neighbor command
 All_Hardware_Module_List=[]
 Hardware_IP_Empty_List=[]
 
@@ -212,7 +208,6 @@ def ConfigurationTest(ip,Device_Type_Num= 0,User_Pass_Num= 0,Passowrd_Enable_Num
 		################ Here Is The Cisco Configuration  ####################
 		######################################################################
 						# Dict_Path=Directory_Path+'/'+New_Dict_IPs_File
-						
 						print ("check enable mode for "+str(ip))
 						if not net_connect.check_enable_mode() :
 							net_connect.enable()
@@ -283,6 +278,8 @@ def ConfigurationTest(ip,Device_Type_Num= 0,User_Pass_Num= 0,Passowrd_Enable_Num
 						print ("Terminal length \n")
 						## Try this First
 						Configuration_Output=""
+						Configuration_Switch=""
+						Configuration_Router=""
 						Configuration_Output=net_connect.send_command_timing("termin len 0"+'\n\n' )
 
 						##### it's here to check if it exists in old worked ip file and to add it to list to append it later to old worked ip
@@ -449,18 +446,25 @@ def ConfigurationTest(ip,Device_Type_Num= 0,User_Pass_Num= 0,Passowrd_Enable_Num
 					###############################################################################
 						try :	
 							Show_CDP_Details_TEXTFSM_List=net_connect.send_command_timing("show cdp neighbors detail "+'\n\n'  ,strip_prompt=False,strip_command=False, use_textfsm=True)
-							for n in Show_CDP_Details_TEXTFSM_List :
-								Show_CDP_Details_TEXTFSM_Dict = n  # this is because the output is in list then in Dict 
-							# print (type(Show_CDP_Details_TEXTFSM_List))
-							# print (Show_CDP_Details_TEXTFSM_List)
-							# print (type(Show_CDP_Details_TEXTFSM_Dict))
-							# print (Show_CDP_Details_TEXTFSM_Dict)
-							# print (type(Show_CDP_Details_TEXTFSM_Dict["management_ip"]))
-								# print (Show_CDP_Details_TEXTFSM_Dict["management_ip"])
-								Manag_IP=Show_CDP_Details_TEXTFSM_Dict["management_ip"]
-								if Pattern_Filter_in_CDP in Manag_IP :
-									if Manag_IP not in num and Manag_IP not in num_New and Manag_IP not in Worked_IPs_Old :
-										num_New.append(Show_CDP_Details_TEXTFSM_Dict["management_ip"])
+							check_list= isinstance(Show_CDP_Details_TEXTFSM_List, list)
+							if check_list :
+								print("\n\nHey It's Not Empty List.")
+								for n in Show_CDP_Details_TEXTFSM_List :
+									Show_CDP_Details_TEXTFSM_Dict = n  # this is because the output is in list then in Dict 
+								# print (type(Show_CDP_Details_TEXTFSM_List))
+								# print (Show_CDP_Details_TEXTFSM_List)
+								# print (type(Show_CDP_Details_TEXTFSM_Dict))
+								# print (Show_CDP_Details_TEXTFSM_Dict)
+								# print (type(Show_CDP_Details_TEXTFSM_Dict["management_ip"]))
+									# print (Show_CDP_Details_TEXTFSM_Dict["management_ip"])
+									Manag_IP=Show_CDP_Details_TEXTFSM_Dict["management_ip"]
+									if Pattern_Filter_in_CDP in Manag_IP :
+										if Manag_IP not in num and Manag_IP not in num_New and Manag_IP not in Worked_IPs_Old :
+											num_New.append(Show_CDP_Details_TEXTFSM_Dict["management_ip"])
+							else :
+								print("\n\n Hey It's Emptyyyyyy :(")
+
+
 
 						except Exception as e:
 							print ('Exception in show cdp neighbors \t' +ip)
@@ -522,13 +526,6 @@ def ConfigurationTest(ip,Device_Type_Num= 0,User_Pass_Num= 0,Passowrd_Enable_Num
 								if "% Invalid input detected at '^' marker." in y :
 										FailedIps.append(ip+"   Invalid input")
 #########################################################################################################
-						##### this if is for not creating file since it's already a worked up just do the discover cdp for it
-						if ip not in Worked_IPs_Old :
-							print (f"IP {ip} not in worked IP append hostname")
-							Hostname_Output_list.append(Hostname_Output)
-						else :
-							print (f"IP  {ip} in worked IP don't append hostname")
-
 
 						test=Configuration_Switch
 						test+= Configuration_Output
@@ -536,8 +533,15 @@ def ConfigurationTest(ip,Device_Type_Num= 0,User_Pass_Num= 0,Passowrd_Enable_Num
 						Configuration_Output_list.append(test)
 
 						try :
-							file_name =Hostname_Output+".txt"
-							Overwrite_Old_File (path=Sub_Directory_Path_for_Backup ,file_name= file_name, Unknown_Lists=Configuration_Output_list)
+						##### this if is for not creating file since it's already a worked up just do the discover cdp for it
+							if ip not in Worked_IPs_Old :
+								print (f"IP {ip} not in worked IP append hostname")
+								Hostname_Output_list.append(Hostname_Output)
+
+								file_name =Hostname_Output+".txt"
+								Overwrite_Old_File (path=Sub_Directory_Path_for_Backup ,file_name= file_name, Unknown_Lists=Configuration_Output_list)
+							else :
+								print (f"IP  {ip} in worked IP don't append hostname")
 
 						except Exception as e:
 							print ('Exception in Saving File \t' +ip)
@@ -665,6 +669,9 @@ def ConfigurationTest(ip,Device_Type_Num= 0,User_Pass_Num= 0,Passowrd_Enable_Num
 
 		return ConfigurationTest_Boolen==1
 
+#	================================================================================= #
+#	========================	Thread Fun 	========================================== #
+#	================================================================================= #
 def Start_Threads() :
 	global num
 	global num_New
@@ -700,7 +707,8 @@ def Start_Threads() :
 			except Exception:
 					FailedExceptionIps.append(num[x])
 
-	main_thread = threading.currentThread()
+	main_thread = threading.current_thread()
+	# main_thread = threading.currentThread()
 	for some_thread in threading.enumerate():
 			if some_thread != main_thread:
 					print(some_thread)
@@ -724,6 +732,9 @@ def Start_Threads() :
 	#################################################################################
 	IPs_ForIteration=Remove_Deplicated_In_List (IPs_ForIteration)	# to Remove Deplicated IPs
 	New_and_inactive_IPs=IPs_ForIteration+num_New
+	print ('New_and_inactive_IPs')
+	print (IPs_ForIteration)
+	print (num_New)
 		### overwrite the old file and keep just inactive IPs and New Discovered to iterate it again
 	Overwrite_Old_File (path=Directory_Path ,file_name= Source_IPs_File, Unknown_Lists=New_and_inactive_IPs)
 
@@ -739,7 +750,7 @@ def Start_Threads() :
 	print(Worked_IPs_Now)
 	print("Worked_IPs_Old")
 	print(Worked_IPs_Old)
-	Append_to_Old_File(fullpath=Directory_Path+"/"+Worked_IPs_Old_File ,Unknown_Lists=Worked_IPs_Now)
+	Append_to_Old_File(path=Directory_Path, file_name=Worked_IPs_Old_File ,Unknown_Lists=Worked_IPs_Now)
 
 	##################################################################################################################################################################
 		######	To ""Save"" new Discovered IPs alone in a File Called Source_IPs_File this is for many ilteration in the loop Script ######
@@ -752,7 +763,7 @@ def Start_Threads() :
 	#################################################################################
 		######	To ""Save"" All Hardware Module  ######
 	#################################################################################
-	Append_to_Old_File(fullpath=Directory_Path+"/"+Hardware_Modules_File ,Unknown_Lists=All_Hardware_Module_List)
+	Append_to_Old_File(path=Directory_Path,file_name=Hardware_Modules_File ,Unknown_Lists=All_Hardware_Module_List)
 
 
 	####################################################################################################
@@ -840,7 +851,9 @@ def Start_Threads() :
 
 	print("\n\tElapsed time: " + str(datetime.now() - start_time))
 
-
+# ================================================================================================ #
+# ===============================		It's the END	========================================== #
+# ================================================================================================ #
 def main():
 	print("\n\n==============================================")
 	print ("Welcome to Discover Script")
@@ -850,6 +863,8 @@ def main():
 	print("Hello, World!")
 	if __name__== "__main__" :
 		print("Main_of_Discover_Script")
-main()
 
+
+main()
+print ("\n\nHey We Have Finished Successfully. \n")
 

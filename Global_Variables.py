@@ -1,5 +1,6 @@
 class Global_Variables:
-	Directory_Path="/home/khayat"
+	Directory_Path="D:/Scripts"
+	# Directory_Path="/home/khayat"
 	Source_IP_File_for_Ping="d.txt"
 	Pinged_New_and_Old_IP_File="active.txt"
 	Source_IP_File_for_Automation="s.txt"
@@ -10,7 +11,8 @@ class Global_Variables:
 	New_Discovered_IPs_File="s_New.txt"
 	New_Dict_IPs_File="Dict_IPs.json"
 	Hardware_Modules_File="All_Hardware_Module_11.txt"
-	Sub_Directory_Path_for_Backup="/home/khayat/Karate_Backup_11"
+	# Sub_Directory_Path_for_Backup="/home/khayat/Karate_Backup_11"
+	Sub_Directory_Path_for_Backup="D:/Scripts/Karate_Backup_Test"
 	# Dict_all_IP_Usr_Pass_Ena={"ip":{"Connection_type":'',"k_Username":'',"k_Password":'',"k_Enable":''}}
 	Dict_all_IP_Usr_Pass_Ena={}
 	def __init (
