@@ -35,8 +35,6 @@ import math
 
 from array import *
 import scp
-# from paramiko import SSHClient
-# import paramiko
 import codecs
 import subprocess
 
@@ -47,31 +45,12 @@ import subprocess
 Device_Type=[ 'cisco_ios_telnet','cisco_ios']
 
 
-Username_Device=["cisco"]
-Passowrd_Device=["cisco"]
+Username_Device=["css","cisco"]
+Passowrd_Device=["css","cisco"]
 Passowrd_Device_Enable=["cisco","cs"]
 
-Global_Output=[]
-Hostname_Output_list=[]
-Configuration_Output_list=[]
-Configuration_Output_ID2_list=[]
-Configuration_Output_ID254_list=[]
-FailedIps=[]
-IPs_ForIteration=[]
-Worked_IPs_Old=[] ## For not repeating dicovering worked IPs after removing them from S file
-Worked_IPs_Now=[] ## For not repeating Old worked IPs 
+# Pattern_Filter_in_CDP= "192."	## Pattern to filter in cdp neighbor command
 
-count=0
-ConfigurationTest_Boolen =0 	## to Return from Recursion
-num_New=[]						## for New IPs
-Pattern_Filter_in_CDP= "192."	## Pattern to filter in cdp neighbor command
-All_Hardware_Module_List=[]
-Hardware_IP_Empty_List=[]
-
-Configuration_Output_ID2=''
-Configuration_Output_ID254=''
-Configuration_Router=""
-Configuration_Switch=""
 
 
 Profile_Archive_IP=[[]]
@@ -93,778 +72,785 @@ Hardware_Modules_File = Class_of_Global_Variables.Hardware_Modules_File
 Sub_Directory_Path_for_Backup = Class_of_Global_Variables.Sub_Directory_Path_for_Backup
 Dict_all_IP_Usr_Pass_Ena=Class_of_Global_Variables.Dict_all_IP_Usr_Pass_Ena
 New_Dict_IPs_File=Class_of_Global_Variables.New_Dict_IPs_File
+Pattern_Filter_in_CDP=Class_of_Global_Variables.Pattern_Filter_in_CDP
+
 ##################################################################
-####################### Get Source IPs from file ##########################
+####################### This is Main Class ##########################
 ##################################################################
-print("Before num Full_Source_Path")
-Full_Source_Path=Directory_Path+"/"+Source_IPs_File
-with open(Full_Source_Path, 'r') as file:
-		num =file.read().splitlines()
-num= Remove_Deplicated_In_List(num)
-print("After Full_Source_Path")
+class Discover_IPs:
+
+	def __init__(self):
 
 
-# ================================================================
-####################### Get Old Worked IPs from file #################
-# ================================================================
-print("Before Worked_IPs_Old File")
-Full_Source_Path=Directory_Path+"/"+Worked_IPs_Old_File
-with open(Full_Source_Path, 'r') as file:
-		Worked_IPs_Old =file.read().splitlines()
+		self.Global_Output=[]
+		self.Hostname_Output_list=[]
+		self.Configuration_Output_list=[]
+		self.Configuration_Output_ID2_list=[]
+		self.Configuration_Output_ID254_list=[]
+		self.FailedIps=[]
+		self.IPs_ForIteration=[]
+		self.Worked_IPs_Old=[] ## For not repeating dicovering worked IPs after removing them from S file
+		self.Worked_IPs_Now=[] ## For not repeating Old worked IPs 
 
-Worked_IPs_Old= Remove_Deplicated_In_List(Worked_IPs_Old)
-print ("Worked_IPs_Old")
-print (Worked_IPs_Old)
+		self.count=0
+		self.ConfigurationTest_Boolen =0 	## to Return from Recursion
+		self.num_New=[]						## for New IPs
+		self.num=[]						## for New IPs
+		self.All_Hardware_Module_List=[]
+		self.Hardware_IP_Empty_List=[]
+
+		self.Configuration_Output_ID2=''
+		self.Configuration_Output_ID254=''
+		self.Configuration_Router=""
+		self.Configuration_Switch=""
+
+		print("\n==============================================")
+		print ("Welcome to Init in Discover_IPs Script")
+		print("==============================================\n")
+
+
+	##################################################################
+	####################### Get Source IPs from file ##########################
+	##################################################################
+
+	def Get_IPs_to_Iterate(self) :
+		print("Before num Full_Source_Path")
+		Full_Source_Path=Directory_Path+"/"+Source_IPs_File
+		with open(Full_Source_Path, 'r') as file:
+				self.num =file.read().splitlines()
+		self.num= Remove_Deplicated_In_List(self.num)
+		print("After Full_Source_Path")
+
+
+	# ================================================================
+	####################### Get Old Worked IPs from file #################
+	# ================================================================
+	def Get_IPs_From_WorkedIPs(self) :
+		print("Before Worked_IPs_Old File")
+		Full_Source_Path=Directory_Path+"/"+Worked_IPs_Old_File
+		with open(Full_Source_Path, 'r') as file:
+				self.Worked_IPs_Old =file.read().splitlines()
+
+		self.Worked_IPs_Old= Remove_Deplicated_In_List(self.Worked_IPs_Old)
+		print ("Worked_IPs_Old")
+		print (self.Worked_IPs_Old)
 
 ##############################################################################
 ##################### The main Function of configuration ##################### 
 ##############################################################################
 
-def ConfigurationTest(ip,Device_Type_Num= 0,User_Pass_Num= 0,Passowrd_Enable_Num=0):
-		global num_New # so we can edit it in this Function 
-		global Configuration_Output_list
-# def ConfigurationTest(ip,Device_Type_Num= 0,User_Pass_Num= 0):
+	def ConfigurationTest(self,ip,Device_Type_Num= 0,User_Pass_Num= 0,Passowrd_Enable_Num=0):
 
-		if ConfigurationTest_Boolen==1 :
-				return ConfigurationTest_Boolen==1
+			print("\n==============================================")
+			print ("Welcome to ConfigurationTest Function in Discover_IPs Script")
+			print("==============================================\n")
 
-# If increment of Num is out of range for User_Pass_Num and Device_Type_Num return 1
-		elif User_Pass_Num >= len(Username_Device)   :
-				print (f"Username Not in Range For IP\t{ip}\n")
-				return ConfigurationTest_Boolen==1
-		elif Device_Type_Num >= len (Device_Type) :
-				print (f"Connection type Not in Range For IP\t{ip}\n")
-				return ConfigurationTest_Boolen==1
-		elif Passowrd_Enable_Num>=len(Passowrd_Device_Enable) :
-				print (f"Enable Pass Not in Range For IP\t{ip}\n")
-				return ConfigurationTest_Boolen==1
+			global num_New # so we can edit it in this Function 
+			global Configuration_Output_list
 
+			if self.ConfigurationTest_Boolen==1 :
+					return self.ConfigurationTest_Boolen==1
 
-# If increment of Num is in range for User_Pass_Num and Device_Type_Num contune
-		else :
-
-				iosv_l2={
-						'device_type': str(Device_Type[Device_Type_Num]),  ##### Type of connection SSH/Telnet
-						'ip':str(ip),
-						'username': Username_Device[User_Pass_Num],
-						'password': Passowrd_Device[User_Pass_Num],
-						'global_delay_factor': 8, #  if there is authentication problem allow this
-						# 'secret':'cs'
-						'secret':Passowrd_Device_Enable[Passowrd_Enable_Num],
-						# 'timeout':10
-						 'session_timeout':4 	#  if there is authentication problem allow this
-								}
-
-				try:
-						# time.sleep(3)
-						Conf_Variables=[]  # To check if any faliure on the configuration after sending it
-						net_connect = ConnectHandler(**iosv_l2)
-						# print(net_connect.find_prompt())
-
-		############ function to check output to send any confirmation message as pass or confirmation of yes or no
-						def SpecialConfirmation (command , message , reply):
-								net_connect.config_mode()    #To enter config mode
-								print ("SpecialConfirmation Config")
-								try :
-										if Device_Type[Device_Type_Num] == "cisco_ios_telnet" :
-												print ("First Write Telnet")
-												net_connect.remote_conn.write(str(command)+'\n' )
-										else :
-												net_connect.remote_conn.sendall(str(command)+'\n' )
-								except : 
-										print ("Exception For Sendall ")
-								print ("SpecialConfirmation Before Sleep")
-								time.sleep(3)
-								print ("SpecialConfirmation after Sleep")
-								if Device_Type[Device_Type_Num] == "cisco_ios_telnet" :
-										print ("First READ Telnet")
-										output = net_connect.remote_conn.read_very_eager().decode("utf-8", "ignore")
-								else :
-										output = net_connect.remote_conn.recv(65535).decode('utf-8')
-								ReplyAppend=''
-								print ("SpecialConfirmation output")
-								print (output)
-								try :
-										if str(message) in output:
-												for i in range(0,(len(reply))):
-														ReplyAppend+=str(reply[i])+'\n'
-												if Device_Type[Device_Type_Num] == "cisco_ios_telnet" :
-														print ("SECOND Telnet")
-														net_connect.remote_conn.write(ReplyAppend)
-														output = net_connect.remote_conn.read_very_eager().decode("utf-8", "ignore") 
-												else :
-														net_connect.remote_conn.sendall(ReplyAppend)
-														output = net_connect.remote_conn.recv(65535).decode('utf-8') 
-										print (output)
-								except :
-										print ("Confirmation Exception Error")
-								return output
+		# If increment of Num is out of range for User_Pass_Num and Device_Type_Num return 1
+			elif User_Pass_Num >= len(Username_Device)   :
+					print (f"Username Not in Range For IP\t{ip}\n")
+					return self.ConfigurationTest_Boolen==1
+			elif Device_Type_Num >= len (Device_Type) :
+					print (f"Connection type Not in Range For IP\t{ip}\n")
+					return self.ConfigurationTest_Boolen==1
+			elif Passowrd_Enable_Num>=len(Passowrd_Device_Enable) :
+					print (f"Enable Pass Not in Range For IP\t{ip}\n")
+					return self.ConfigurationTest_Boolen==1
 
 
+	# If increment of Num is in range for User_Pass_Num and Device_Type_Num contune
+			else :
 
-						print ("Entered Device Successfully \t"+ip +"\n")
+					iosv_l2={
+							'device_type': str(Device_Type[Device_Type_Num]),  ##### Type of connection SSH/Telnet
+							'ip':str(ip),
+							'username': Username_Device[User_Pass_Num],
+							'password': Passowrd_Device[User_Pass_Num],
+							'global_delay_factor': 8, #  if there is authentication problem allow this
+							# 'secret':'cs'
+							'secret':Passowrd_Device_Enable[Passowrd_Enable_Num],
+							# 'timeout':10
+							 'session_timeout':4 	#  if there is authentication problem allow this
+									}
 
-		######################################################################
-		################ Here Is The Cisco Configuration  ####################
-		######################################################################
-						# Dict_Path=Directory_Path+'/'+New_Dict_IPs_File
-						print ("check enable mode for "+str(ip))
-						if not net_connect.check_enable_mode() :
-							net_connect.enable()
-							# Temp_Dict_k_Enable={"k_Enable" :Passowrd_Device_Enable[Passowrd_Enable_Num]}
-							print ("entered enable mode for "+str(ip))
-						# else :
-						# 	Temp_Dict_k_Enable={"k_Enable" :''}
-						print ("Already on enable mode for "+str(ip))
+					try:
+							Conf_Variables=[]  # To check if any faliure on the configuration after sending it
+							net_connect = ConnectHandler(**iosv_l2)
+							# print(net_connect.find_prompt())
 
-
-						# Temp_Dict_k_ip={}
-						# Temp_Dict_k_ip[ip]={}
-						# Temp_Dict_Connection_type={"Connection_type":Device_Type[Device_Type_Num]}
-						# Temp_Dict_k_Username={"k_Username":Username_Device[User_Pass_Num]}
-						# Temp_Dict_k_Password={"k_Password":Passowrd_Device[User_Pass_Num]}
-
-
-						# Temp_Dict_k_ip[ip].update(Temp_Dict_Connection_type)
-						# Temp_Dict_k_ip[ip].update(Temp_Dict_k_Username)
-						# Temp_Dict_k_ip[ip].update(Temp_Dict_k_Password)
-						# Temp_Dict_k_ip[ip].update(Temp_Dict_k_Enable)
-						# Dict_all_IP_Usr_Pass_Ena.update(Temp_Dict_k_ip)
-						# print (f"Dict_all_IP_Usr_Pass_Ena[{ip}]")
-						# print (Dict_all_IP_Usr_Pass_Ena[ip])
-						# Temp_Dict_k_ip.popitem()
-						# print("After POP Temp_Dict_k_ip")
-						# print(Temp_Dict_k_ip)
-
-						# Temp_Dict_fake_Key= [*Temp_Dict_fake.keys()]
-
-
-						# with open(Dict_Path) as convert_file:
-						# 	data=convert_file.read()
-						# convert_file.close()
-						# os.chmod(fullpath, 0o777)  ## to use it with full permisson
-						# data=json.loads(data)
-						# print("Dict:", data)
-						# print("Type:", type(data))
-
-						# if not Temp_Dict_fake_Key[0] in Dict_all_IP_Usr_Pass_Ena.keys():
-						# 	print("A new Key ")
-						# 	print("Temp_Dict_fake.keys()")
-						# 	print(Temp_Dict_fake.keys())
-
-						# 	data=json.dumps(Temp_Dict_fake)
-						# 	with open(Dict_Path, 'a') as convert_file:
-						# 		convert_file.write(data)
-						# 	os.chmod(fullpath, 0o777)  ## to use it with full permisson
-						# 	convert_file.close()
-
-						# else :
-						# 	print("An old Key ")
+			############ function to check output to send any confirmation message as pass or confirmation of yes or no
+							def SpecialConfirmation (command , message , reply):
+									net_connect.config_mode()    #To enter config mode
+									print ("SpecialConfirmation Config")
+									try :
+											if Device_Type[Device_Type_Num] == "cisco_ios_telnet" :
+													print ("First Write Telnet")
+													net_connect.remote_conn.write(str(command)+'\n' )
+											else :
+													net_connect.remote_conn.sendall(str(command)+'\n' )
+									except : 
+											print ("Exception For Sendall ")
+									print ("SpecialConfirmation Before Sleep")
+									time.sleep(3)
+									print ("SpecialConfirmation after Sleep")
+									if Device_Type[Device_Type_Num] == "cisco_ios_telnet" :
+											print ("First READ Telnet")
+											output = net_connect.remote_conn.read_very_eager().decode("utf-8", "ignore")
+									else :
+											output = net_connect.remote_conn.recv(65535).decode('utf-8')
+									ReplyAppend=''
+									print ("SpecialConfirmation output")
+									print (output)
+									try :
+											if str(message) in output:
+													for i in range(0,(len(reply))):
+															ReplyAppend+=str(reply[i])+'\n'
+													if Device_Type[Device_Type_Num] == "cisco_ios_telnet" :
+															print ("SECOND Telnet")
+															net_connect.remote_conn.write(ReplyAppend)
+															output = net_connect.remote_conn.read_very_eager().decode("utf-8", "ignore") 
+													else :
+															net_connect.remote_conn.sendall(ReplyAppend)
+															output = net_connect.remote_conn.recv(65535).decode('utf-8') 
+											print (output)
+									except :
+											print ("Confirmation Exception Error")
+									return output
 
 
 
-				##################################################################
-				########### Check if in config mode or not to exit config mode
-				##################################################################
-						if net_connect.check_config_mode() :
-								net_connect.exit_config_mode()
-								print ("After exiting config to perform show commands "+str(ip))
-						print ("After checking config to perform show commands "+str(ip))
+							print ("Entered Device Successfully \t"+ip +"\n")
 
-		######################################################################
-
-
-
-						print ("Terminal length \n")
-						## Try this First
-						Configuration_Output=""
-						Configuration_Switch=""
-						Configuration_Router=""
-						Configuration_Output=net_connect.send_command_timing("termin len 0"+'\n\n' )
-
-						##### it's here to check if it exists in old worked ip file and to add it to list to append it later to old worked ip
-						##### this if is for not creating file since it's already a worked up just do the discover cdp for it
-						if ip not in Worked_IPs_Old :
-							print(f"IP {ip} not in Old Worked IPs excute the commands")
-							Configuration_Output=net_connect.send_command_timing("show run "+'\n\n'  ,strip_prompt=False,strip_command=False)
-							Configuration_Output+=net_connect.send_command_timing("show ip inte br "+'\n\n' ,strip_prompt=False,strip_command=False)
-							Configuration_Switch=net_connect.send_command_timing("show fex  "+'\n\n' ,strip_prompt=False,strip_command=False)
-							Configuration_Switch+=net_connect.send_command_timing("show fex status   "+'\n\n' ,strip_prompt=False,strip_command=False)
-							Configuration_Switch+=net_connect.send_command_timing("show fex detail  "+'\n\n' ,strip_prompt=False,strip_command=False)
-							Configuration_Switch+=net_connect.send_command_timing("show inventory  "+'\n\n' ,strip_prompt=False,strip_command=False)
-							Configuration_Switch+=net_connect.send_command_timing("show module switch all  "+'\n\n' ,strip_prompt=False,strip_command=False)
-							Configuration_Switch+=net_connect.send_command_timing("show module  "+'\n\n' ,strip_prompt=False,strip_command=False)
-							Configuration_Switch+=net_connect.send_command_timing("show etherchan summa  "+'\n\n' ,strip_prompt=False,strip_command=False)
-							Configuration_Output+=net_connect.send_command_timing("show cdp neighbors detail "+'\n\n' ,strip_prompt=False,strip_command=False)
-							Configuration_Switch+=net_connect.send_command_timing("show interfaces status  "+'\n\n' ,strip_prompt=False,strip_command=False)
-							Configuration_Output+=net_connect.send_command_timing("show inter desc "+'\n\n' ,strip_prompt=False,strip_command=False)
-							Configuration_Router=net_connect.send_command_timing("show mpl l2 vc "+'\n\n' ,strip_prompt=False,strip_command=False)
-							Configuration_Router+=net_connect.send_command_timing("show ip ospf int br "+'\n\n' ,strip_prompt=False,strip_command=False)
-							Configuration_Router+=net_connect.send_command_timing("show ip ospf neighbor "+'\n\n' ,strip_prompt=False,strip_command=False)
-							Configuration_Output+=net_connect.send_command_timing("show version "+'\n\n' ,strip_prompt=False,strip_command=False)
-							Configuration_Output+=net_connect.send_command_timing("show cdp neighbors "+'\n\n' ,strip_prompt=False,strip_command=False)
-
-							# print ("\n\n\n\n===============================\n\n\n")
-							# print (Configuration_Switch)
-							# print ("\n\n\n\n===============================\n\n\n")
-							# print (Configuration_Output)
-							# print ("\n\n\n\n===============================\n\n\n")
-							# print (Configuration_Router)
-							# print ("\n\n\n\n===============================\n\n\n")
+			######################################################################
+			################ Here Is The Cisco Configuration  ####################
+			######################################################################
+							# Dict_Path=Directory_Path+'/'+New_Dict_IPs_File
+							print ("check enable mode for "+str(ip))
+							if not net_connect.check_enable_mode() :
+								net_connect.enable()
+								# Temp_Dict_k_Enable={"k_Enable" :Passowrd_Device_Enable[Passowrd_Enable_Num]}
+								print ("entered enable mode for "+str(ip))
+							# else :
+							# 	Temp_Dict_k_Enable={"k_Enable" :''}
+							print ("Already on enable mode for "+str(ip))
 
 
-							################### for ARP ###############################################################
-						######################################################################
+							# Temp_Dict_k_ip={}
+							# Temp_Dict_k_ip[ip]={}
+							# Temp_Dict_Connection_type={"Connection_type":Device_Type[Device_Type_Num]}
+							# Temp_Dict_k_Username={"k_Username":Username_Device[User_Pass_Num]}
+							# Temp_Dict_k_Password={"k_Password":Passowrd_Device[User_Pass_Num]}
 
-							# Configuration_Output_ID2=net_connect.send_command_timing("show ip arp vrf ID2 "+'\n\n'  ,strip_prompt=False,strip_command=False)
-							# Configuration_Output_ID254=net_connect.send_command_timing("show ip arp vrf ID254 "+'\n\n'  ,strip_prompt=False,strip_command=False)
-						######################################################################
 
-							
-							# Configuration_Output=net_connect.send_command_timing("termin len 0"+'\n\n',delay_factor=5)
-							# Configuration_Output=net_connect.send_command_timing("show run "+'\n\n' ,delay_factor=5,strip_prompt=False,strip_command=False)
-							# Configuration_Output+=net_connect.send_command_timing("show ip inte br "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
-							# Configuration_Switch=net_connect.send_command_timing("show fex  "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
-							# Configuration_Output+=net_connect.send_command_timing("show cdp neighbors detail "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
-							# Configuration_Switch+=net_connect.send_command_timing("show interfaces status  "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
-							# Configuration_Output+=net_connect.send_command_timing("show inter desc "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
-							# Configuration_Router=net_connect.send_command_timing("show ip ospf neighbor "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
-							# Configuration_Output+=net_connect.send_command_timing("show version "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
-							# Configuration_Output+=net_connect.send_command_timing("show cdp neighbors "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
-						else :
-							print (f"IP {ip} in Worked Old IPs don't excute the commands")
+							# Temp_Dict_k_ip[ip].update(Temp_Dict_Connection_type)
+							# Temp_Dict_k_ip[ip].update(Temp_Dict_k_Username)
+							# Temp_Dict_k_ip[ip].update(Temp_Dict_k_Password)
+							# Temp_Dict_k_ip[ip].update(Temp_Dict_k_Enable)
+							# Dict_all_IP_Usr_Pass_Ena.update(Temp_Dict_k_ip)
+							# print (f"Dict_all_IP_Usr_Pass_Ena[{ip}]")
+							# print (Dict_all_IP_Usr_Pass_Ena[ip])
+							# Temp_Dict_k_ip.popitem()
+							# print("After POP Temp_Dict_k_ip")
+							# print(Temp_Dict_k_ip)
 
-				###########################################################################################################
-						############################ Use TEXTFSM Template to get Show version ############################
-				###########################################################################################################
-						try :		# Try For TextFSM
-							# Show_Version_TEXTFSM_List=net_connect.send_command_timing("show version "+'\n\n'  ,strip_prompt=False,strip_command=False, use_textfsm=True, textfsm_template="/home/khayat/Textfsm_Templates/cisco_ios_show_version.textfsm")
-							# Test_Expect=net_connect.send_command("show ip inte br "+'\n\n' ,strip_prompt=False,strip_command=False)
-							# print ("\t\tTest_Expect")
-							# print (Test_Expect)
-							Show_Version_TEXTFSM_List=net_connect.send_command_timing("show version "+'\n\n'  ,strip_prompt=False,strip_command=False, use_textfsm=True)
-							Show_Version_TEXTFSM_Dict = Show_Version_TEXTFSM_List[0]  # this is because the output is in list then in Dict 
-							# print (type(Show_Version_TEXTFSM_List))  
-							# print ("Show_Version_TEXTFSM_List")
-							# print ((Show_Version_TEXTFSM_List[0]))
-							# print (type(Show_Version_TEXTFSM_Dict))
-							# print ((Show_Version_TEXTFSM_Dict))
-							# print ("\n\n\n")
-							# print ("\t\tConfiguration_Output_TEXTFSM")
-							# for k,v in Show_Version_TEXTFSM_Dict.items() :
-							# 	print (f"{k} :: {v}")
+							# Temp_Dict_fake_Key= [*Temp_Dict_fake.keys()]
 
-							if Show_Version_TEXTFSM_Dict["hardware"] : 
-								Hardware_IP = "\t\t"+str(Show_Version_TEXTFSM_Dict["hardware"][0]) + f"		{ip}___" + str(Show_Version_TEXTFSM_Dict["hostname"])
-								All_Hardware_Module_List.append(Hardware_IP)
-							else :
-								Hardware_IP_Empty_List.append(ip+"   Hardware Empty")
-							Hostname_Output=ip+".__"+str(Show_Version_TEXTFSM_Dict["hostname"])
-														
+
+							# with open(Dict_Path) as convert_file:
+							# 	data=convert_file.read()
+							# convert_file.close()
+							# os.chmod(fullpath, 0o777)  ## to use it with full permisson
+							# data=json.loads(data)
+							# print("Dict:", data)
+							# print("Type:", type(data))
+
+							# if not Temp_Dict_fake_Key[0] in Dict_all_IP_Usr_Pass_Ena.keys():
+							# 	print("A new Key ")
+							# 	print("Temp_Dict_fake.keys()")
+							# 	print(Temp_Dict_fake.keys())
+
+							# 	data=json.dumps(Temp_Dict_fake)
+							# 	with open(Dict_Path, 'a') as convert_file:
+							# 		convert_file.write(data)
+							# 	os.chmod(fullpath, 0o777)  ## to use it with full permisson
+							# 	convert_file.close()
+
+							# else :
+							# 	print("An old Key ")
+
+
+
+					##################################################################
+					########### Check if in config mode or not to exit config mode
+					##################################################################
+							if net_connect.check_config_mode() :
+									net_connect.exit_config_mode()
+									print ("After exiting config to perform show commands "+str(ip))
+							print ("After checking config to perform show commands "+str(ip))
+
+			######################################################################
+
+
+
+							print ("Terminal length \n")
+							## Try this First
+							self.Configuration_Output=""
+							self.Configuration_Switch=""
+							self.Configuration_Router=""
+							self.Configuration_Output=net_connect.send_command_timing("termin len 0"+'\n\n' )
+
 							##### it's here to check if it exists in old worked ip file and to add it to list to append it later to old worked ip
-							if ip not in Worked_IPs_Old : 
-								print(f"IP not in Worked_IPs_Old :: {ip}")
-								Worked_IPs_Now.append(ip)
+							##### this if is for not creating file since it's already a worked up just do the discover cdp for it
+							if ip not in self.Worked_IPs_Old :
+								print(f"IP {ip} not in Old Worked IPs excute the commands")
+								self.Configuration_Output=net_connect.send_command_timing("show run "+'\n\n'  ,strip_prompt=False,strip_command=False)
+								self.Configuration_Output+=net_connect.send_command_timing("show ip inte br "+'\n\n' ,strip_prompt=False,strip_command=False)
+								self.Configuration_Switch=net_connect.send_command_timing("show fex  "+'\n\n' ,strip_prompt=False,strip_command=False)
+								self.Configuration_Switch+=net_connect.send_command_timing("show fex status   "+'\n\n' ,strip_prompt=False,strip_command=False)
+								self.Configuration_Switch+=net_connect.send_command_timing("show fex detail  "+'\n\n' ,strip_prompt=False,strip_command=False)
+								self.Configuration_Switch+=net_connect.send_command_timing("show inventory  "+'\n\n' ,strip_prompt=False,strip_command=False)
+								self.Configuration_Switch+=net_connect.send_command_timing("show module switch all  "+'\n\n' ,strip_prompt=False,strip_command=False)
+								self.Configuration_Switch+=net_connect.send_command_timing("show module  "+'\n\n' ,strip_prompt=False,strip_command=False)
+								self.Configuration_Switch+=net_connect.send_command_timing("show etherchan summa  "+'\n\n' ,strip_prompt=False,strip_command=False)
+								self.Configuration_Output+=net_connect.send_command_timing("show cdp neighbors detail "+'\n\n' ,strip_prompt=False,strip_command=False)
+								self.Configuration_Switch+=net_connect.send_command_timing("show interfaces status  "+'\n\n' ,strip_prompt=False,strip_command=False)
+								self.Configuration_Output+=net_connect.send_command_timing("show inter desc "+'\n\n' ,strip_prompt=False,strip_command=False)
+								self.Configuration_Router=net_connect.send_command_timing("show mpl l2 vc "+'\n\n' ,strip_prompt=False,strip_command=False)
+								self.Configuration_Router+=net_connect.send_command_timing("show ip ospf int br "+'\n\n' ,strip_prompt=False,strip_command=False)
+								self.Configuration_Router+=net_connect.send_command_timing("show ip ospf neighbor "+'\n\n' ,strip_prompt=False,strip_command=False)
+								self.Configuration_Output+=net_connect.send_command_timing("show version "+'\n\n' ,strip_prompt=False,strip_command=False)
+								self.Configuration_Output+=net_connect.send_command_timing("show cdp neighbors "+'\n\n' ,strip_prompt=False,strip_command=False)
 
-						except Exception as e:
-						      print ('Exception in show version\t' +ip)
-						      FailedIps.append(ip+"   Exception in show version")
-						      IPs_ForIteration.append(ip)
+								# print ("\n\n\n\n===============================\n\n\n")
+								# print (self.Configuration_Switch)
+								# print ("\n\n\n\n===============================\n\n\n")
+								# print (self.Configuration_Output)
+								# print ("\n\n\n\n===============================\n\n\n")
+								# print (self.Configuration_Router)
+								# print ("\n\n\n\n===============================\n\n\n")
 
-			###########################################################################################################
-						print (f"This is after getting SHOW for IP\t{ip}")
+
+								################### for ARP ###############################################################
+							######################################################################
+
+								# self.Configuration_Output_ID2=net_connect.send_command_timing("show ip arp vrf ID2 "+'\n\n'  ,strip_prompt=False,strip_command=False)
+								# self.Configuration_Output_ID254=net_connect.send_command_timing("show ip arp vrf ID254 "+'\n\n'  ,strip_prompt=False,strip_command=False)
+							######################################################################
+
+								
+								# self.Configuration_Output=net_connect.send_command_timing("termin len 0"+'\n\n',delay_factor=5)
+								# self.Configuration_Output=net_connect.send_command_timing("show run "+'\n\n' ,delay_factor=5,strip_prompt=False,strip_command=False)
+								# self.Configuration_Output+=net_connect.send_command_timing("show ip inte br "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
+								# self.Configuration_Switch=net_connect.send_command_timing("show fex  "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
+								# self.Configuration_Output+=net_connect.send_command_timing("show cdp neighbors detail "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
+								# self.Configuration_Switch+=net_connect.send_command_timing("show interfaces status  "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
+								# self.Configuration_Output+=net_connect.send_command_timing("show inter desc "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
+								# self.Configuration_Router=net_connect.send_command_timing("show ip ospf neighbor "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
+								# self.Configuration_Output+=net_connect.send_command_timing("show version "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
+								# self.Configuration_Output+=net_connect.send_command_timing("show cdp neighbors "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
+							else :
+								print (f"IP {ip} in Worked Old IPs don't excute the commands")
+
+					###########################################################################################################
+							############################ Use TEXTFSM Template to get Show version ############################
+					###########################################################################################################
+							try :		# Try For TextFSM
+								# Show_Version_TEXTFSM_List=net_connect.send_command_timing("show version "+'\n\n'  ,strip_prompt=False,strip_command=False, use_textfsm=True, textfsm_template="/home/khayat/Textfsm_Templates/cisco_ios_show_version.textfsm")
+								# Test_Expect=net_connect.send_command("show ip inte br "+'\n\n' ,strip_prompt=False,strip_command=False)
+								# print ("\t\tTest_Expect")
+								# print (Test_Expect)
+								Show_Version_TEXTFSM_List=net_connect.send_command_timing("show version "+'\n\n'  ,strip_prompt=False,strip_command=False, use_textfsm=True)
+								Show_Version_TEXTFSM_Dict = Show_Version_TEXTFSM_List[0]  # this is because the output is in list then in Dict 
+								# print (type(Show_Version_TEXTFSM_List))  
+								# print ("Show_Version_TEXTFSM_List")
+								# print ((Show_Version_TEXTFSM_List[0]))
+								# print (type(Show_Version_TEXTFSM_Dict))
+								# print ((Show_Version_TEXTFSM_Dict))
+								# print ("\n\n\n")
+								# print ("\t\tConfiguration_Output_TEXTFSM")
+								# for k,v in Show_Version_TEXTFSM_Dict.items() :
+								# 	print (f"{k} :: {v}")
+
+								if Show_Version_TEXTFSM_Dict["hardware"] : 
+									Hardware_IP = "\t\t"+str(Show_Version_TEXTFSM_Dict["hardware"][0]) + f"		{ip}___" + str(Show_Version_TEXTFSM_Dict["hostname"])
+									self.All_Hardware_Module_List.append(Hardware_IP)
+								else :
+									self.Hardware_IP_Empty_List.append(ip+"   Hardware Empty")
+								Hostname_Output=ip+".__"+str(Show_Version_TEXTFSM_Dict["hostname"])
+															
+								##### it's here to check if it exists in old worked ip file and to add it to list to append it later to old worked ip
+								if ip not in self.Worked_IPs_Old : 
+									print(f"IP not in Worked_IPs_Old :: {ip}")
+									self.Worked_IPs_Now.append(ip)
+
+							except Exception as e:
+							      print ('Exception in show version\t' +ip)
+							      self.FailedIps.append(ip+"   Exception in show version")
+							      self.IPs_ForIteration.append(ip)
 
 				###########################################################################################################
-				##################      Get each interfaces status using Script     ##################################################
-				###########################################################################################################
-						# List_Of_Inter=net_connect.send_command_timing("show interface status "+'\n\n')
-						# # print ("\t\tList_Of_Inter")
-						# List_of_Lines= Get_All_Inter(List_Of_Inter)
-						# print ("\t\tList_of_Lines\n")
-						# print (List_of_Lines)
-						# print ("\t\tGet_Ports_Status")
-						# Returned_List=Get_Ports_Status(List_of_Lines)
+							print (f"This is after getting SHOW for IP\t{ip}")
 
-						# for i in Returned_List :
-						#   print (f"key\t{i}\tValue\t{Returned_List.get(i)} ")
+					###########################################################################################################
+					##################      Get each interfaces status using Script     ##################################################
+					###########################################################################################################
+							# List_Of_Inter=net_connect.send_command_timing("show interface status "+'\n\n')
+							# # print ("\t\tList_Of_Inter")
+							# List_of_Lines= Get_All_Inter(List_Of_Inter)
+							# print ("\t\tList_of_Lines\n")
+							# print (List_of_Lines)
+							# print ("\t\tGet_Ports_Status")
+							# Returned_List=Get_Ports_Status(List_of_Lines)
 
-				# ###########################################################################################################
-				# ##################        Get each interfaces IP using Script     ##################################################
-				# ###########################################################################################################
-						# IPs_All_Interfaces=net_connect.send_command_timing("show ip interface br "+'\n\n')
+							# for i in Returned_List :
+							#   print (f"key\t{i}\tValue\t{Returned_List.get(i)} ")
+
+					# ###########################################################################################################
+					# ##################        Get each interfaces IP using Script     ##################################################
+					# ###########################################################################################################
+							# IPs_All_Interfaces=net_connect.send_command_timing("show ip interface br "+'\n\n')
+							
+							# Inter_IPs= Get_Interfaces_IP(IPs_All_Interfaces)
+
+							# for x in Inter_IPs :
+							#   if x[-1] =="up" and x[-2]=="up" :
+							#       print (x)
+							#       print (x[1])
+
+
+					##################################################################
+					########### Check if in config mode or not to exit config mode
+					##################################################################
+							if not net_connect.check_config_mode() :
+									net_connect.config_mode()
+									print ("After entering config "+str(ip))
+							print ("After checking config to perform configuration commands  "+str(ip))
+
+					######################################################################
+					################ Set list of configuration  ###########################
+					######################################################################
+							# List_cmd=[f"inte {Returned_List["disabled"][0]}","no shutd","ip add 192.168.100.100 255.255.255.0"]
+							# print ("Returned_List[disabled][0]")
+							# print (Returned_List.get("disabled")[0])
+							# Temp=str(Returned_List.get("disabled")[0])
+							# List_cmd=[f"inte {Temp}","no shutd"]
+							# Output_Setting_Inter=net_connect.send_config_set(config_commands=List_cmd)
+							# print ("Output_Setting_Inter")
+							# print (Output_Setting_Inter)
+
+					##################################################################
+					########### Check if in config mode or not to exit config mode
+					##################################################################
+							if net_connect.check_config_mode() :
+									net_connect.exit_config_mode()
+									print ("After exiting config "+str(ip))
+							print ("After checking config for CDP command\t"+str(ip))
+
+					###########################################################################################################
+					##################      Add new IPs from CDP Command     ##################################################
+					###########################################################################################################
 						
-						# Inter_IPs= Get_Interfaces_IP(IPs_All_Interfaces)
+						###############################################################################
+							######################## Using Script for cdp neighbors to get New IPs	
+						###############################################################################
 
-						# for x in Inter_IPs :
-						#   if x[-1] =="up" and x[-2]=="up" :
-						#       print (x)
-						#       print (x[1])
+							# CDP_ALL=net_connect.send_command_timing("show cdp neighbors detail | i IP address: "+'\n\n')
+							# print ("\t\tGet_CDP_Neighbors")
+							# num_New = list(num_New) + list(Get_CDP_Neighbors (CDP_ALL , num, Pattern_Filter_in_CDP=Pattern_Filter_in_CDP))
 
-
-				##################################################################
-				########### Check if in config mode or not to exit config mode
-				##################################################################
-						if not net_connect.check_config_mode() :
-								net_connect.config_mode()
-								print ("After entering config "+str(ip))
-						print ("After checking config to perform configuration commands  "+str(ip))
-
-				######################################################################
-				################ Set list of configuration  ###########################
-				######################################################################
-						# List_cmd=[f"inte {Returned_List["disabled"][0]}","no shutd","ip add 192.168.100.100 255.255.255.0"]
-						# print ("Returned_List[disabled][0]")
-						# print (Returned_List.get("disabled")[0])
-						# Temp=str(Returned_List.get("disabled")[0])
-						# List_cmd=[f"inte {Temp}","no shutd"]
-						# Output_Setting_Inter=net_connect.send_config_set(config_commands=List_cmd)
-						# print ("Output_Setting_Inter")
-						# print (Output_Setting_Inter)
-
-				##################################################################
-				########### Check if in config mode or not to exit config mode
-				##################################################################
-						if net_connect.check_config_mode() :
-								net_connect.exit_config_mode()
-								print ("After exiting config "+str(ip))
-						print ("After checking config for CDP command\t"+str(ip))
-
-				###########################################################################################################
-				##################      Add new IPs from CDP Command     ##################################################
-				###########################################################################################################
-					
-					###############################################################################
-						######################## Using Script for cdp neighbors to get New IPs	
-					###############################################################################
-
-						# CDP_ALL=net_connect.send_command_timing("show cdp neighbors detail | i IP address: "+'\n\n')
-						# print ("\t\tGet_CDP_Neighbors")
-						# num_New = list(num_New) + list(Get_CDP_Neighbors (CDP_ALL , num, Pattern_Filter_in_CDP=Pattern_Filter_in_CDP))
-
-					###############################################################################
-						######################## Using TextFSM for cdp neighbors	
-					###############################################################################
-						try :	
-							Show_CDP_Details_TEXTFSM_List=net_connect.send_command_timing("show cdp neighbors detail "+'\n\n'  ,strip_prompt=False,strip_command=False, use_textfsm=True)
-							check_list= isinstance(Show_CDP_Details_TEXTFSM_List, list)
-							if check_list :
-								print("\n\nHey It's Not Empty List.")
-								for n in Show_CDP_Details_TEXTFSM_List :
-									Show_CDP_Details_TEXTFSM_Dict = n  # this is because the output is in list then in Dict 
-								# print (type(Show_CDP_Details_TEXTFSM_List))
-								# print (Show_CDP_Details_TEXTFSM_List)
-								# print (type(Show_CDP_Details_TEXTFSM_Dict))
-								# print (Show_CDP_Details_TEXTFSM_Dict)
-								# print (type(Show_CDP_Details_TEXTFSM_Dict["management_ip"]))
-									# print (Show_CDP_Details_TEXTFSM_Dict["management_ip"])
-									Manag_IP=Show_CDP_Details_TEXTFSM_Dict["management_ip"]
-									if Pattern_Filter_in_CDP in Manag_IP :
-										if Manag_IP not in num and Manag_IP not in num_New and Manag_IP not in Worked_IPs_Old :
-											num_New.append(Show_CDP_Details_TEXTFSM_Dict["management_ip"])
-							else :
-								print("\n\n Hey It's Emptyyyyyy :(")
+						###############################################################################
+							######################## Using TextFSM for cdp neighbors	
+						###############################################################################
+							try :	
+								Show_CDP_Details_TEXTFSM_List=net_connect.send_command_timing("show cdp neighbors detail "+'\n\n'  ,strip_prompt=False,strip_command=False, use_textfsm=True)
+								check_list= isinstance(Show_CDP_Details_TEXTFSM_List, list)
+								if check_list :
+									print("\n\nHey It's Not Empty List.")
+									for n in Show_CDP_Details_TEXTFSM_List :
+										Show_CDP_Details_TEXTFSM_Dict = n  # this is because the output is in list then in Dict 
+									# print (type(Show_CDP_Details_TEXTFSM_List))
+									# print (Show_CDP_Details_TEXTFSM_List)
+									# print (type(Show_CDP_Details_TEXTFSM_Dict))
+									# print (Show_CDP_Details_TEXTFSM_Dict)
+									# print (type(Show_CDP_Details_TEXTFSM_Dict["management_ip"]))
+										# print (Show_CDP_Details_TEXTFSM_Dict["management_ip"])
+										Manag_IP=Show_CDP_Details_TEXTFSM_Dict["management_ip"]
+										if Pattern_Filter_in_CDP in Manag_IP :
+											if Manag_IP not in self.num and Manag_IP not in self.num_New and Manag_IP not in self.Worked_IPs_Old :
+												self.num_New.append(Show_CDP_Details_TEXTFSM_Dict["management_ip"])
+								else :
+									print("\n\n Hey It's Emptyyyyyy :(")
 
 
 
-						except Exception as e:
-							print ('Exception in show cdp neighbors \t' +ip)
-							FailedIps.append(ip+"   Exception in show cdp neighbors ")
-							IPs_ForIteration.append(ip)
+							except Exception as e:
+								print ('Exception in show cdp neighbors \t' +ip)
+								self.FailedIps.append(ip+"   Exception in show cdp neighbors ")
+								self.IPs_ForIteration.append(ip)
 
-				###########################################################################################################
-				################    Example on confirmation message Function
-				###########################################################################################################
-
-
-						# if ip =="192.168.233.13":
-						#       print (str (SpecialConfirmation("crypto key generate rsa general-keys" ,"modulus" ,"1024")))
+					###########################################################################################################
+					################    Example on confirmation message Function
+					###########################################################################################################
 
 
-				###########################################################################################################
-				###########################################################################################################
-						if net_connect.check_config_mode() :
-								net_connect.exit_config_mode()
-						print ("After last check config "+str(ip))
-
-		################################################################################
-		####################### Test Ping For Rang Of IP  ##############################
-		################################################################################
-
-						# Active_ping_ip=[]
-						# InActive_ping_ip=[]
-						# Sub_Ip_ping="2.0.32."
-						# for x in range(1,255) :
-						# 	print (x)
-						# 	Ip_ping=Sub_Ip_ping+str(x)
-						# 	ping_result=net_connect.send_command_timing("ping  "+Ip_ping+'\n\n' ,strip_prompt=False,strip_command=False)
-						# 	# print (ping_result)
-						# 	# ping_is_successful(ping_result) 
-						# 	# print (ping_is_successful(ping_result)) 
-						# 	# print (type(ping_is_successful(ping_result))) 
-
-						# 	if ping_is_successful(ping_result) :
-						# 		Active_ping_ip.append(Ip_ping)
-						# 	else :
-						# 		InActive_ping_ip.append(Ip_ping)
-						# print ("Active_ping_ip")
-						# for x in Active_ping_ip :
-						# 	print (x)
-
-						# print ("\n\n\nInActive_ping_ip")
-						# for x in InActive_ping_ip :
-						# 	print (x)
+							# if ip =="192.168.233.13":
+							#       print (str (SpecialConfirmation("crypto key generate rsa general-keys" ,"modulus" ,"1024")))
 
 
+					###########################################################################################################
+					###########################################################################################################
+							if net_connect.check_config_mode() :
+									net_connect.exit_config_mode()
+							print ("After last check config "+str(ip))
 
-		############### Append Configuration Variables to Global Variable ##########
+			################################################################################
+			####################### Test Ping For Rang Of IP  ##############################
+			################################################################################
 
-						# Conf_Variables.append(Hostname_Output)
-						# print (Configuration_Output)
-						# Conf_Variables.append(Configuration_Output)
-		############### Search in Configuration if any command error and return its IP ################
-						for y in Conf_Variables:
-								if "% Invalid input detected at '^' marker." in y :
-										FailedIps.append(ip+"   Invalid input")
-#########################################################################################################
+							# Active_ping_ip=[]
+							# InActive_ping_ip=[]
+							# Sub_Ip_ping="2.0.32."
+							# for x in range(1,255) :
+							# 	print (x)
+							# 	Ip_ping=Sub_Ip_ping+str(x)
+							# 	ping_result=net_connect.send_command_timing("ping  "+Ip_ping+'\n\n' ,strip_prompt=False,strip_command=False)
+							# 	# print (ping_result)
+							# 	# ping_is_successful(ping_result) 
+							# 	# print (ping_is_successful(ping_result)) 
+							# 	# print (type(ping_is_successful(ping_result))) 
 
-						test=Configuration_Switch
-						test+= Configuration_Output
-						test+=Configuration_Router
-						Configuration_Output_list.append(test)
+							# 	if ping_is_successful(ping_result) :
+							# 		Active_ping_ip.append(Ip_ping)
+							# 	else :
+							# 		InActive_ping_ip.append(Ip_ping)
+							# print ("Active_ping_ip")
+							# for x in Active_ping_ip :
+							# 	print (x)
 
-						try :
-						##### this if is for not creating file since it's already a worked up just do the discover cdp for it
-							if ip not in Worked_IPs_Old :
-								print (f"IP {ip} not in worked IP append hostname")
-								Hostname_Output_list.append(Hostname_Output)
-
-								file_name =Hostname_Output+".txt"
-								Overwrite_Old_File (path=Sub_Directory_Path_for_Backup ,file_name= file_name, Unknown_Lists=Configuration_Output_list)
-							else :
-								print (f"IP  {ip} in worked IP don't append hostname")
-
-						except Exception as e:
-							print ('Exception in Saving File \t' +ip)
-							FailedIps.append(ip+"   Exception in Saving File ")
-							IPs_ForIteration.append(ip)
-
-						Configuration_Output_list=[]
-
-						Configuration_Output_ID2_list.append(Configuration_Output_ID2)
-						Configuration_Output_ID254_list.append(Configuration_Output_ID254)
-
-
-		############### SAVE Output IN FILES  #######################
-						Global_Output.append(Hostname_Output)
-						print ("Exiting  "+str(ip))
-						net_connect.disconnect()
-						print ("After Exiting  "+str(ip))
+							# print ("\n\n\nInActive_ping_ip")
+							# for x in InActive_ping_ip :
+							# 	print (x)
 
 
 
-################### Exception ###################################
+			############### Append Configuration Variables to Global Variable ##########
+
+							# Conf_Variables.append(Hostname_Output)
+							# print (Configuration_Output)
+							# Conf_Variables.append(Configuration_Output)
+			############### Search in Configuration if any command error and return its IP ################
+							for y in Conf_Variables:
+									if "% Invalid input detected at '^' marker." in y :
+											FailedIps.append(ip+"   Invalid input")
+	#########################################################################################################
+
+							test=self.Configuration_Switch
+							test+=self.Configuration_Output
+							test+=self.Configuration_Router
+							self.Configuration_Output_list.append(test)
+
+							try :
+							##### this if is for not creating file since it's already a worked up just do the discover cdp for it
+								if ip not in self.Worked_IPs_Old :
+									print (f"IP {ip} not in worked IP append hostname")
+									self.Hostname_Output_list.append(Hostname_Output)
+
+									file_name =Hostname_Output+".txt"
+									Overwrite_Old_File (path=Sub_Directory_Path_for_Backup ,file_name= file_name, Unknown_Lists=self.Configuration_Output_list)
+								else :
+									print (f"IP  {ip} in worked IP don't append hostname")
+
+							except Exception as e:
+								print ('Exception in Saving File \t' +ip)
+								self.FailedIps.append(ip+"   Exception in Saving File ")
+								self.IPs_ForIteration.append(ip)
+
+							self.Configuration_Output_list=[]
+
+							self.Configuration_Output_ID2_list.append(self.Configuration_Output_ID2)
+							self.Configuration_Output_ID254_list.append(self.Configuration_Output_ID254)
 
 
-				except ( NetMikoAuthenticationException) as  netmikoAuthenticationException:
-						# print ('Authentication Failure\t' + ip)
-						print (str (User_Pass_Num) +"   " +str(Username_Device[User_Pass_Num])+ " failed Authentication\t"+ip)
-						################ Print error from msg from the main Lib  
-						print(f"netmikoAuthenticationException : {netmikoAuthenticationException}\n")
-						User_Pass_Num+=1
-				# If it tried all users and pass and failed add it to failedIps
-						if User_Pass_Num >= len(Username_Device) :
-								FailedIps.append(ip+"   Authentication Error ")
-								IPs_ForIteration.append(ip)
-						# if User_Pass_Num < len(Username_Device) :
-						#       print("this is Authentication  "+str(ip)+" Device_Type "+str(Device_Type[Device_Type_Num])+" Username_Device " +str(Username_Device[User_Pass_Num])+" Passowrd_Device " +str(Passowrd_Device[User_Pass_Num]))
-				# Recursive function
-						return ConfigurationTest (ip ,Device_Type_Num ,User_Pass_Num,Passowrd_Enable_Num )
+			############### SAVE Output IN FILES  #######################
+							self.Global_Output.append(Hostname_Output)
+							print ("Exiting  "+str(ip))
+							net_connect.disconnect()
+							print ("After Exiting  "+str(ip))
 
 
-				except (ValueError):
-						print (str (Passowrd_Enable_Num)+"\tEnable Authentication\t"+ip)
-						Passowrd_Enable_Num+=1
-						if Passowrd_Enable_Num>=len(Passowrd_Device_Enable):
-								FailedIps.append(ip+"   Enable Authentication Error ")
-								IPs_ForIteration.append(ip)
-						return ConfigurationTest (ip ,Device_Type_Num ,User_Pass_Num ,Passowrd_Enable_Num) 
+
+	################### Exception ###################################
 
 
-				except socket_error as socket_err :
-						################ Print error from msg from the main Lib  
-						print(f"Socket Error: \n{socket_err}\t for IP {ip}  trying another type of Connection\n")
-						print ("Continue")
-						if '111' in f"Type {socket_err}" : 
+					except ( NetMikoAuthenticationException) as  netmikoAuthenticationException:
+							# print ('Authentication Failure\t' + ip)
+							print (str (User_Pass_Num) +"   " +str(Username_Device[User_Pass_Num])+ " failed Authentication\t"+ip)
+							################ Print error from msg from the main Lib  
+							print(f"netmikoAuthenticationException : {netmikoAuthenticationException}\n")
+							User_Pass_Num+=1
+					# If it tried all users and pass and failed add it to failedIps
+							if User_Pass_Num >= len(Username_Device) :
+									self.FailedIps.append(ip+"   Authentication Error ")
+									self.IPs_ForIteration.append(ip)
+							# if User_Pass_Num < len(Username_Device) :
+							#       print("this is Authentication  "+str(ip)+" Device_Type "+str(Device_Type[Device_Type_Num])+" Username_Device " +str(Username_Device[User_Pass_Num])+" Passowrd_Device " +str(Passowrd_Device[User_Pass_Num]))
+					# Recursive function
+							return self.ConfigurationTest (ip ,Device_Type_Num ,User_Pass_Num,Passowrd_Enable_Num )
+
+
+					except (ValueError):
+							print (str (Passowrd_Enable_Num)+"\tEnable Authentication\t"+ip)
+							Passowrd_Enable_Num+=1
+							if Passowrd_Enable_Num>=len(Passowrd_Device_Enable):
+									self.FailedIps.append(ip+"   Enable Authentication Error ")
+									self.IPs_ForIteration.append(ip)
+							return self.ConfigurationTest (ip ,Device_Type_Num ,User_Pass_Num ,Passowrd_Enable_Num) 
+
+
+					except socket_error as socket_err :
+							################ Print error from msg from the main Lib  
+							print(f"Socket Error: \n{socket_err}\t for IP {ip}  trying another type of Connection\n")
+							print ("Continue")
+							if '111' in f"Type {socket_err}" or '10061' in f"Type {socket_err}" :
+								Device_Type_Num+=1
+								if  Device_Type_Num >= len(Device_Type) :
+										self.FailedIps.append(ip+"   Socket or connection type Error")
+										self.IPs_ForIteration.append(ip)
+								return self.ConfigurationTest (ip ,Device_Type_Num ,User_Pass_Num ,Passowrd_Enable_Num)
+							if '113' in f"Type {socket_err}" :
+								self.FailedIps.append(ip+"   No route to the host")
+								self.IPs_ForIteration.append(ip)
+								return self.ConfigurationTest_Boolen==1
+							self.FailedIps.append(ip+"   Socket or connection type Error")
+							self.IPs_ForIteration.append(ip)
+							return self.ConfigurationTest_Boolen==1
+
+
+					except (NetMikoTimeoutException) as netmikoTimeoutException:
+							# print ('Timeout  Failure\t' + ip)
+							print (str (Device_Type_Num)+"\tTimeoutException\t"+ip)
+							################ Print error from msg from the main Lib  
+							print(f"netmikoTimeoutException : \n{netmikoTimeoutException}\n")
 							Device_Type_Num+=1
 							if  Device_Type_Num >= len(Device_Type) :
-									FailedIps.append(ip+"   Socket or connection type Error")
-									IPs_ForIteration.append(ip)
-							return ConfigurationTest (ip ,Device_Type_Num ,User_Pass_Num ,Passowrd_Enable_Num)
-						if '113' in f"Type {socket_err}" :
-							FailedIps.append(ip+"   No route to the host")
-							IPs_ForIteration.append(ip)
-							return ConfigurationTest_Boolen==1
-						FailedIps.append(ip+"   Socket or connection type Error")
-						IPs_ForIteration.append(ip)
-						return ConfigurationTest_Boolen==1
-
-
-				except (NetMikoTimeoutException) as netmikoTimeoutException:
-						# print ('Timeout  Failure\t' + ip)
-						print (str (Device_Type_Num)+"\tTimeoutException\t"+ip)
-						################ Print error from msg from the main Lib  
-						print(f"netmikoTimeoutException : \n{netmikoTimeoutException}\n")
-						Device_Type_Num+=1
-						if  Device_Type_Num >= len(Device_Type) :
-								FailedIps.append(ip+"   Timeout Error")
-								IPs_ForIteration.append(ip)
-						# if  Device_Type_Num < len(Device_Type) :
-						#       print("this is Timeout "+str(ip)+" Device_Type "+str(Device_Type[Device_Type_Num])+" Username_Device " +str(Username_Device[User_Pass_Num])+" Passowrd_Device " +str(Passowrd_Device[User_Pass_Num]))
-						return ConfigurationTest (ip ,Device_Type_Num ,User_Pass_Num ,Passowrd_Enable_Num)
+									self.FailedIps.append(ip+"   Timeout Error")
+									self.IPs_ForIteration.append(ip)
+							# if  Device_Type_Num < len(Device_Type) :
+							#       print("this is Timeout "+str(ip)+" Device_Type "+str(Device_Type[Device_Type_Num])+" Username_Device " +str(Username_Device[User_Pass_Num])+" Passowrd_Device " +str(Passowrd_Device[User_Pass_Num]))
+							return self.ConfigurationTest (ip ,Device_Type_Num ,User_Pass_Num ,Passowrd_Enable_Num)
 
 
 
-				# except (paramiko.ssh_exception.SSHException) as sshException :
-				except (SSHException) as sshException :
-						# print ('SSH  Failure\t' + ip)
-						print (str (Device_Type_Num)+"\tSSHException\t"+ip +"\n")
-						################ Print error from msg from the main Lib  
-						print(f"Unable to establish SSH connection: \n{sshException}\t for IP {ip}\n")
-						Device_Type_Num+=1
-						if  Device_Type_Num >= len(Device_Type) :
-								FailedIps.append(ip+"   SSHException Error ")
-								IPs_ForIteration.append(ip)
-						# if  Device_Type_Num < len(Device_Type) :
-						#       print("this is SSHException "+str(ip)+" Device_Type "+str(Device_Type[Device_Type_Num])+" Username_Device " +str(Username_Device[User_Pass_Num])+" Passowrd_Device " +str(Passowrd_Device[User_Pass_Num]))
-						return ConfigurationTest (ip ,Device_Type_Num ,User_Pass_Num ,Passowrd_Enable_Num)
+					# except (paramiko.ssh_exception.SSHException) as sshException :
+					except (SSHException) as sshException :
+							# print ('SSH  Failure\t' + ip)
+							print (str (Device_Type_Num)+"\tSSHException\t"+ip +"\n")
+							################ Print error from msg from the main Lib  
+							print(f"Unable to establish SSH connection: \n{sshException}\t for IP {ip}\n")
+							Device_Type_Num+=1
+							if  Device_Type_Num >= len(Device_Type) :
+									self.FailedIps.append(ip+"   SSHException Error ")
+									self.IPs_ForIteration.append(ip)
+							# if  Device_Type_Num < len(Device_Type) :
+							#       print("this is SSHException "+str(ip)+" Device_Type "+str(Device_Type[Device_Type_Num])+" Username_Device " +str(Username_Device[User_Pass_Num])+" Passowrd_Device " +str(Passowrd_Device[User_Pass_Num]))
+							return self.ConfigurationTest (ip ,Device_Type_Num ,User_Pass_Num ,Passowrd_Enable_Num)
 
-				except (ValueError):
-						print (str (Passowrd_Enable_Num)+"   "+str(Passowrd_Device_Enable[Passowrd_Enable_Num]) +" Failed Enable Authentication\t"+ip)
-						Passowrd_Enable_Num+=1
-						if Passowrd_Enable_Num>=len(Passowrd_Device_Enable):
-								FailedIps.append(ip+"   Enable Authentication Error ")
-								IPs_ForIteration.append(ip)
-						return ConfigurationTest (ip ,Device_Type_Num ,User_Pass_Num ,Passowrd_Enable_Num) 
+					except (ValueError):
+							print (str (Passowrd_Enable_Num)+"   "+str(Passowrd_Device_Enable[Passowrd_Enable_Num]) +" Failed Enable Authentication\t"+ip)
+							Passowrd_Enable_Num+=1
+							if Passowrd_Enable_Num>=len(Passowrd_Device_Enable):
+									self.FailedIps.append(ip+"   Enable Authentication Error ")
+									self.IPs_ForIteration.append(ip)
+							return ConfigurationTest (ip ,Device_Type_Num ,User_Pass_Num ,Passowrd_Enable_Num) 
 
-				except (EOFError) as eof_Error:
-						################ Print error from msg from the main Lib  
-						print(f"eof_Error : \n{eof_Error}\n")
-						# print ('End of File wihle attempting device\t' +ip)
-						FailedIps.append(ip+"   EOFError")
-						IPs_ForIteration.append(ip)
-						# print("this is EOFError "+str(ip)+" Device_Type "+str(Device_Type[Device_Type_Num])+" Username_Device " +str(Username_Device[User_Pass_Num])+" Passowrd_Device " +str(Passowrd_Device[User_Pass_Num]))
-						return ConfigurationTest_Boolen==1
-						
-		###################################################################
-		######### if you want to show error , comment next lines if you want to show which Ips have error remove comment  ##############
-		###################################################################
-				# except Exception as e:
-				#       # print ('End of File wihle attempting device\t' +ip)
-				#       FailedIps.append(ip+"   Exception as e")
-				#       # print("this is EOFError "+str(ip)+" Device_Type "+str(Device_Type[Device_Type_Num])+" Username_Device " +str(Username_Device[User_Pass_Num])+" Passowrd_Device " +str(Passowrd_Device[User_Pass_Num]))
-				#       return ConfigurationTest_Boolen==1
-
-
-		####################################################################
-
-		return ConfigurationTest_Boolen==1
-
-#	================================================================================= #
-#	========================	Thread Fun 	========================================== #
-#	================================================================================= #
-def Start_Threads() :
-	global num
-	global num_New
-	global IPs_ForIteration
-	start_time = datetime.now()
-
-	# ===============================================================================
-	#=============  Calling Main Function and Run Threads  ==========================
-	# ===============================================================================
-
-	#####################################################################
-	################## Controling number of processing  ##################
-	#####################################################################
-
-	FailedExceptionIps=[]
-	thread_counter=0
-
-	num=Validate_List_ip (num) 	## Call Validate Function to remove unvalid IPs 
-	print(f"After Validating num List {num}\n")
-	for x in num:
-			print("inside main loop\n")
-
-			ConfigurationTest_Boolen==0
-			thread_counter+=1
-			if (thread_counter % 100)==0 :
-				print (f"\n\n\nSleep  {thread_counter}\n\n\n")
-				time.sleep(20)
-				print ("\n\n\nAfter Sleep\n\n\n")
-			print (f"\t\tWe are Processing this IP  {x}\n")
-			try:
-					my_thread = threading.Thread(target=ConfigurationTest, args=(x,0,0))
-					my_thread.start()
-			except Exception:
-					FailedExceptionIps.append(num[x])
-
-	main_thread = threading.current_thread()
-	# main_thread = threading.currentThread()
-	for some_thread in threading.enumerate():
-			if some_thread != main_thread:
-					print(some_thread)
-					some_thread.join()
-
-	# loginandcopy('10.231.0.84','khyat','P@ssw0rd','a1.py','a1.py')
-
-	print ("\nAfter Finishing operations on devices\n")
-	####################################################################################################
-	###################    Add new IPs and Remove Deplicated IPs   #####################################
-	####################################################################################################
-
-	num_New=Remove_Deplicated_In_List (num_New)	# to Remove Deplicated IPs
-	num=Remove_Deplicated_In_List (num)	# to Remove Deplicated IPs
-	if len(num_New) != 0 :
-		print ("\n\t\tNew Discovered IPs from cdp neighbors in num_New")
-		print (f"\n\t\tNumber of New Discovered IPs {len(num_New)}")
-
-	#################################################################################
-		######	To ""ADD"" new Discovered IPs in File Called Source_IPs_File ######
-	#################################################################################
-	IPs_ForIteration=Remove_Deplicated_In_List (IPs_ForIteration)	# to Remove Deplicated IPs
-	New_and_inactive_IPs=IPs_ForIteration+num_New
-	print ('New_and_inactive_IPs')
-	print (IPs_ForIteration)
-	print (num_New)
-		### overwrite the old file and keep just inactive IPs and New Discovered to iterate it again
-	Overwrite_Old_File (path=Directory_Path ,file_name= Source_IPs_File, Unknown_Lists=New_and_inactive_IPs)
-
-	#################################################################################
-		######	To ""ADD"" Failed IPs in File Called FailedIPs_Cumulative_File ######
-	#################################################################################
-	Overwrite_Old_File (path=Directory_Path ,file_name= FailedIPs_Cumulative_File, Unknown_Lists=IPs_ForIteration)
-
-	#############################################################################################################################
-		########## Add worked IPs to Old Worked IPs in a file to avoid repeating it againg during discovering new IPs ####
-	#############################################################################################################################
-	print("Worked_IPs_Now Before append To File")
-	print(Worked_IPs_Now)
-	print("Worked_IPs_Old")
-	print(Worked_IPs_Old)
-	Append_to_Old_File(path=Directory_Path, file_name=Worked_IPs_Old_File ,Unknown_Lists=Worked_IPs_Now)
-
-	##################################################################################################################################################################
-		######	To ""Save"" new Discovered IPs alone in a File Called Source_IPs_File this is for many ilteration in the loop Script ######
-	##################################################################################################################################################################
-
-	# Overwrite_Old_File (path=Directory_Path ,file_name= New_Discovered_IPs_File, Unknown_Lists=num_New)
-
-	##################################################
-
-	#################################################################################
-		######	To ""Save"" All Hardware Module  ######
-	#################################################################################
-	Append_to_Old_File(path=Directory_Path,file_name=Hardware_Modules_File ,Unknown_Lists=All_Hardware_Module_List)
+					except (EOFError) as eof_Error:
+							################ Print error from msg from the main Lib  
+							print(f"eof_Error : \n{eof_Error}\n")
+							# print ('End of File wihle attempting device\t' +ip)
+							self.FailedIps.append(ip+"   EOFError")
+							self.IPs_ForIteration.append(ip)
+							# print("this is EOFError "+str(ip)+" Device_Type "+str(Device_Type[Device_Type_Num])+" Username_Device " +str(Username_Device[User_Pass_Num])+" Passowrd_Device " +str(Passowrd_Device[User_Pass_Num]))
+							return self.ConfigurationTest_Boolen==1
+							
+			###################################################################
+			######### if you want to show error , comment next lines if you want to show which Ips have error remove comment  ##############
+			###################################################################
+					# except Exception as e:
+					#       # print ('End of File wihle attempting device\t' +ip)
+					#       FailedIps.append(ip+"   Exception as e")
+					#       # print("this is EOFError "+str(ip)+" Device_Type "+str(Device_Type[Device_Type_Num])+" Username_Device " +str(Username_Device[User_Pass_Num])+" Passowrd_Device " +str(Passowrd_Device[User_Pass_Num]))
+					#       return ConfigurationTest_Boolen==1
 
 
-	####################################################################################################
-		############# To Save File in the same host you have run script on it ##############
-	####################################################################################################
-	# file_counter =0
-	# for f in range (0, len(Hostname_Output_list)) :
-	# 	file_counter+=1
-	# 	if (file_counter % 100)==0 :
-	# 		print (f"\nsleep {file_counter}\n")
-	# 		time.sleep(20)
-	# 	file_name =Hostname_Output_list[f]+".txt"
-	# 	Overwrite_Old_File (path=Sub_Directory_Path_for_Backup ,file_name= file_name, Unknown_Lists=Configuration_Output_list[f])
+			####################################################################
+
+			return self.ConfigurationTest_Boolen==1
+
+	#	================================================================================= #
+	#	========================	Thread Fun 	========================================== #
+	#	================================================================================= #
+	def Start_Threads(self) :
+		# global num
+		print("\n==============================================")
+		print ("Welcome to Start_Threads Function")
+		print("==============================================\n")
+
+		global num_New
+		global IPs_ForIteration
+
+		start_time = datetime.now()
+
+		# ===============================================================================
+		#=============  Calling Main Function and Run Threads  ==========================
+		# ===============================================================================
+
+		#####################################################################
+		################## Controling number of processing  ##################
+		#####################################################################
+
+		FailedExceptionIps=[]
+		thread_counter=0
+
+		self.Get_IPs_to_Iterate()  # to iniate num list of ips
+		self.Get_IPs_From_WorkedIPs()  # to get Worked ips and put it in a list of ips
+		self.num=Validate_List_ip (self.num) 	## Call Validate Function to remove unvalid IPs 
+		print(f"After Validating num List {self.num}\n")
+		for x in self.num:
+				print("\ninside main loop")
+
+				self.ConfigurationTest_Boolen==0
+				thread_counter+=1
+				if (thread_counter % 100)==0 :
+					print (f"\n\nSleep  {thread_counter}\n\n")
+					time.sleep(20)
+					print ("\n\nAfter Sleep\n\n")
+				print (f"\t\tWe are Processing this IP  {x}\n")
+				try:
+						my_thread = threading.Thread(target=self.ConfigurationTest, args=(x,0,0))
+						my_thread.start()
+				except Exception:
+						FailedExceptionIps.append(self.num[x])
+
+		main_thread = threading.current_thread()
+		for some_thread in threading.enumerate():
+				if some_thread != main_thread:
+						print(some_thread)
+						some_thread.join()
+
+		# loginandcopy('10.231.0.84','khyat','P@ssw0rd','a1.py','a1.py')
+
+		print ("\nAfter Finishing operations on devices\n")
+		####################################################################################################
+		###################    Add new IPs and Remove Deplicated IPs   #####################################
+		####################################################################################################
+
+		self.num_New=Remove_Deplicated_In_List (self.num_New)	# to Remove Deplicated IPs
+		self.num=Remove_Deplicated_In_List (self.num)	# to Remove Deplicated IPs
+		if len(self.num_New) != 0 :
+			print ("\n\t\tNew Discovered IPs from cdp neighbors in num_New")
+			print (f"\t\tNumber of New Discovered IPs {len(self.num_New)}")
+
+		#################################################################################
+			######	To ""ADD"" new Discovered IPs in File Called Source_IPs_File ######
+		#################################################################################
+		self.IPs_ForIteration=Remove_Deplicated_In_List (self.IPs_ForIteration)	# to Remove Deplicated IPs
+		New_and_inactive_IPs=self.IPs_ForIteration+self.num_New
+
+			### overwrite the old file and keep just inactive IPs and New Discovered to iterate it again
+		Overwrite_Old_File (path=Directory_Path ,file_name= Source_IPs_File, Unknown_Lists=New_and_inactive_IPs)
+
+		#################################################################################
+			######	To ""ADD"" Failed IPs in File Called FailedIPs_Cumulative_File ######
+		#################################################################################
+		Overwrite_Old_File (path=Directory_Path ,file_name= FailedIPs_Cumulative_File, Unknown_Lists=self.FailedIps)
+		# Overwrite_Old_File (path=Directory_Path ,file_name= FailedIPs_Cumulative_File, Unknown_Lists=self.IPs_ForIteration)
+
+		#############################################################################################################################
+			########## Add worked IPs to Old Worked IPs in a file to avoid repeating it againg during discovering new IPs ####
+		#############################################################################################################################
+		# print("\nWorked_IPs_Now Before append To File")
+		# print(self.Worked_IPs_Now)
+		# print("\nWorked_IPs_Old")
+		# print(self.Worked_IPs_Old)
+		Append_to_Old_File(path=Directory_Path, file_name=Worked_IPs_Old_File ,Unknown_Lists=self.Worked_IPs_Now)
+
+		##################################################################################################################################################################
+			######	To ""Save"" new Discovered IPs alone in a File Called Source_IPs_File this is for many ilteration in the loop Script ######
+		##################################################################################################################################################################
+
+		# Overwrite_Old_File (path=Directory_Path ,file_name= New_Discovered_IPs_File, Unknown_Lists=self.num_New)
+
+		##################################################
+
+		#################################################################################
+			######	To ""Save"" All Hardware Module  ######
+		#################################################################################
+		Append_to_Old_File(path=Directory_Path,file_name=Hardware_Modules_File ,Unknown_Lists=self.All_Hardware_Module_List)
 
 
-	#################################################################################
-				#########     This for vrf ID2 arp #################
-	#################################################################################
-	# file_counter =0
-	# for f in range (0, len(Hostname_Output_list)) :
-	# 	file_counter+=1
-	# 	if (file_counter % 100)==0 :
-	# 		print (f"\nsleep {file_counter}\n")
-	# 		time.sleep(20)
-	# 	file_name= Hostname_Output_list[f]+"__ID2.txt"
-	# 	Overwrite_Old_File (path=Directory_Path ,file_name= file_name , Unknown_Lists=Configuration_Output_ID2_list[f])
-			
-	#################################################################################
-				#########     This for vrf ID254 arp #################
-	#################################################################################
-	# file_counter =0
-	# for f in range (0, len(Hostname_Output_list)) :
-	# 	file_counter+=1
-	# 	if (file_counter % 100)==0 :
-	# 		print (f"\nsleep {file_counter}\n")
-	# 		time.sleep(20)
-	# 	file_name= Hostname_Output_list[f]+"__ID254.txt"
-	# 	Overwrite_Old_File (path=Directory_Path ,file_name= file_name , Unknown_Lists=Configuration_Output_ID254_list[f])
-
-	####################################################################################################
-	####################################################################################################
-	if len(Hostname_Output_list)!=0 :
-		for i in Hostname_Output_list :
-				print ("\t\t"+i)
+		####################################################################################################
+		####################################################################################################
+		if len(self.Hostname_Output_list)!=0 :
+			for i in self.Hostname_Output_list :
+					print ("\t\t"+i)
 
 
-	if len(FailedIps)!=0 :
-		print("\n\t\tFailedIps")
-		for i in FailedIps :
-				print('\t  '+i)
-		print(f"\n\t\tLength of the Failed IPs  {len(FailedIps)}")
+		if len(self.FailedIps)!=0 :
+			print("\n\t\tFailedIps")
+			for i in self.FailedIps :
+					print('\t  '+i)
+			print(f"\t\tLength of the Failed IPs  {len(self.FailedIps)}")
 
-		############# these are the failed IPs while running threads together 
-	if len(FailedExceptionIps)!=0 : 
-		print("\n\tFailed IPs in the main thread")
-		print(FailedExceptionIps)
-	# print (FailedIps)
-
-
-	if len(num_New)!=0 :
-		print ("\n\t\tNew Discovered IPs from cdp neighbors in num_New")
-		print (num_New)
-
-		print (f"\n\t\tNumber of New Discovered IPs {len(num_New)}")
-		print (f"\n\t\tNumber of All IPs {len(num)+len(num_New)}")
-	print(f"\n\t\tLength of the Hostname_Output_list IPs {len(Hostname_Output_list)}")
-	print(f"\n\t\tLength of the IPs in the num  {len(num)}")
+			############# these are the failed IPs while running threads together 
+		if len(FailedExceptionIps)!=0 : 
+			print("\tFailed IPs in the main thread")
+			print(FailedExceptionIps)
+		# print (FailedIps)
 
 
-	print('\n\t\tDict_all_IP_Usr_Pass_Ena')
-	print(Dict_all_IP_Usr_Pass_Ena)
-		############# these are the Hardware module 
-	# if len(All_Hardware_Module_List)!= 0:
-	# 	print("\n\n\t\tAll Hardware Module List\n")
-	# 	for hardware in All_Hardware_Module_List :
-	# 		print(hardware)
+		if len(self.num_New)!=0 :
+			print ("\n\t\tNew Discovered IPs from cdp neighbors in num_New")
+			print (self.num_New)
+			print (f"\t\tNumber of New Discovered IPs {len(self.num_New)}")
+			print (f"\t\tNumber of All IPs {len(self.num)+len(self.num_New)}")
+		print(f"\t\tLength of the Hostname_Output_list IPs {len(self.Hostname_Output_list)}")
+		print(f"\t\tLength of the IPs in the num  {len(self.num)}")
+
+			############# these are the Hardware module 
+		# if len(self.All_Hardware_Module_List)!= 0:
+		# 	print("\n\n\t\tAll Hardware Module List\n")
+		# 	for hardware in self.All_Hardware_Module_List :
+		# 		print(hardware)
 
 
-		############# these are the empty Hardware module in the show version 
-	if len(Hardware_IP_Empty_List)!=0:
-		print ("\n\t\tHardware Empty IPs")
-		for c in Hardware_IP_Empty_List :
-			print(c)
-		print (f"\n\t\tNumber of All Hardware Empty IPs {len(Hardware_IP_Empty_List)}")
+			############# these are the empty Hardware module in the show version 
+		if len(self.Hardware_IP_Empty_List)!=0:
+			print ("\t\tHardware Empty IPs")
+			for c in self.Hardware_IP_Empty_List :
+				print(c)
+			print (f"\t\tNumber of All Hardware Empty IPs {len(self.Hardware_IP_Empty_List)}")
 
-	print("\n\tElapsed time: " + str(datetime.now() - start_time))
-
-# ================================================================================================ #
-# ===============================		It's the END	========================================== #
-# ================================================================================================ #
-def main():
-	print("\n\n==============================================")
-	print ("Welcome to Discover Script")
-	print("==============================================\n\n")
-
-	Start_Threads()
-	print("Hello, World!")
-	if __name__== "__main__" :
-		print("Main_of_Discover_Script")
+		print("\n\tElapsed time: " + str(datetime.now() - start_time))
 
 
-main()
-print ("\n\nHey We Have Finished Successfully. \n")
+	# ================================================================================================ #
+	# ===============================		It's the Main Function for Discover ================================ #
+	# ================================================================================================ #
+	def Main_Fun_Call_Discover(self):
+		print("\n==============================================")
+		print ("Welcome to Discover Script")
+		print("==============================================\n")
 
+		self.Start_Threads()
+		print ("\n\nHey We Have Finished Successfully From Discovering. ^_^ ^_^ \n")
+
+
+if __name__== "__main__" :
+	print("\nThis is Run Main of Main_of_Discover_Script")
+	Discover_IPs_run=Discover_IPs()
+	Discover_IPs_run.Main_Fun_Call_Discover()
