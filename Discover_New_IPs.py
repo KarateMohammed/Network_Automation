@@ -45,11 +45,13 @@ import subprocess
 Device_Type=[ 'cisco_ios_telnet','cisco_ios']
 
 
+
+
+
 Username_Device=["css","cisco"]
 Passowrd_Device=["css","cisco"]
 Passowrd_Device_Enable=["cisco","cs"]
 
-# Pattern_Filter_in_CDP= "192."	## Pattern to filter in cdp neighbor command
 
 
 
@@ -103,6 +105,7 @@ class Discover_IPs:
 		self.Configuration_Output_ID254=''
 		self.Configuration_Router=""
 		self.Configuration_Switch=""
+		self.Configuration_Output=""
 
 		print("\n==============================================")
 		print ("Welcome to Init in Discover_IPs Script")
@@ -146,7 +149,7 @@ class Discover_IPs:
 			print("==============================================\n")
 
 			global num_New # so we can edit it in this Function 
-			global Configuration_Output_list
+			global Configuration_Output_list  
 
 			if self.ConfigurationTest_Boolen==1 :
 					return self.ConfigurationTest_Boolen==1
@@ -171,11 +174,11 @@ class Discover_IPs:
 							'ip':str(ip),
 							'username': Username_Device[User_Pass_Num],
 							'password': Passowrd_Device[User_Pass_Num],
-							'global_delay_factor': 8, #  if there is authentication problem allow this
+							'global_delay_factor': 10, #  if there is authentication problem allow this
 							# 'secret':'cs'
 							'secret':Passowrd_Device_Enable[Passowrd_Enable_Num],
 							# 'timeout':10
-							 'session_timeout':4 	#  if there is authentication problem allow this
+							 'session_timeout': 6 	#  if there is authentication problem allow this
 									}
 
 					try:
@@ -299,32 +302,32 @@ class Discover_IPs:
 
 							print ("Terminal length \n")
 							## Try this First
-							self.Configuration_Output=""
-							self.Configuration_Switch=""
-							self.Configuration_Router=""
+							# self.Configuration_Output=""
+							# self.Configuration_Switch=""
+							# self.Configuration_Router=""
 							self.Configuration_Output=net_connect.send_command_timing("termin len 0"+'\n\n' )
 
 							##### it's here to check if it exists in old worked ip file and to add it to list to append it later to old worked ip
 							##### this if is for not creating file since it's already a worked up just do the discover cdp for it
 							if ip not in self.Worked_IPs_Old :
 								print(f"IP {ip} not in Old Worked IPs excute the commands")
-								self.Configuration_Output=net_connect.send_command_timing("show run "+'\n\n'  ,strip_prompt=False,strip_command=False)
-								self.Configuration_Output+=net_connect.send_command_timing("show ip inte br "+'\n\n' ,strip_prompt=False,strip_command=False)
+								# self.Configuration_Output=net_connect.send_command_timing("show run "+'\n\n'  ,strip_prompt=False,strip_command=False)
+								# self.Configuration_Output+=net_connect.send_command_timing("show ip inte br "+'\n\n' ,strip_prompt=False,strip_command=False)
 								self.Configuration_Switch=net_connect.send_command_timing("show fex  "+'\n\n' ,strip_prompt=False,strip_command=False)
-								self.Configuration_Switch+=net_connect.send_command_timing("show fex status   "+'\n\n' ,strip_prompt=False,strip_command=False)
-								self.Configuration_Switch+=net_connect.send_command_timing("show fex detail  "+'\n\n' ,strip_prompt=False,strip_command=False)
-								self.Configuration_Switch+=net_connect.send_command_timing("show inventory  "+'\n\n' ,strip_prompt=False,strip_command=False)
-								self.Configuration_Switch+=net_connect.send_command_timing("show module switch all  "+'\n\n' ,strip_prompt=False,strip_command=False)
-								self.Configuration_Switch+=net_connect.send_command_timing("show module  "+'\n\n' ,strip_prompt=False,strip_command=False)
-								self.Configuration_Switch+=net_connect.send_command_timing("show etherchan summa  "+'\n\n' ,strip_prompt=False,strip_command=False)
-								self.Configuration_Output+=net_connect.send_command_timing("show cdp neighbors detail "+'\n\n' ,strip_prompt=False,strip_command=False)
-								self.Configuration_Switch+=net_connect.send_command_timing("show interfaces status  "+'\n\n' ,strip_prompt=False,strip_command=False)
-								self.Configuration_Output+=net_connect.send_command_timing("show inter desc "+'\n\n' ,strip_prompt=False,strip_command=False)
-								self.Configuration_Router=net_connect.send_command_timing("show mpl l2 vc "+'\n\n' ,strip_prompt=False,strip_command=False)
-								self.Configuration_Router+=net_connect.send_command_timing("show ip ospf int br "+'\n\n' ,strip_prompt=False,strip_command=False)
-								self.Configuration_Router+=net_connect.send_command_timing("show ip ospf neighbor "+'\n\n' ,strip_prompt=False,strip_command=False)
-								self.Configuration_Output+=net_connect.send_command_timing("show version "+'\n\n' ,strip_prompt=False,strip_command=False)
-								self.Configuration_Output+=net_connect.send_command_timing("show cdp neighbors "+'\n\n' ,strip_prompt=False,strip_command=False)
+								# self.Configuration_Switch+=net_connect.send_command_timing("show fex status   "+'\n\n' ,strip_prompt=False,strip_command=False)
+								# self.Configuration_Switch+=net_connect.send_command_timing("show fex detail  "+'\n\n' ,strip_prompt=False,strip_command=False)
+								# self.Configuration_Switch+=net_connect.send_command_timing("show inventory  "+'\n\n' ,strip_prompt=False,strip_command=False)
+								# self.Configuration_Switch+=net_connect.send_command_timing("show module switch all  "+'\n\n' ,strip_prompt=False,strip_command=False)
+								# self.Configuration_Switch+=net_connect.send_command_timing("show module  "+'\n\n' ,strip_prompt=False,strip_command=False)
+								# self.Configuration_Switch+=net_connect.send_command_timing("show etherchan summa  "+'\n\n' ,strip_prompt=False,strip_command=False)
+								# self.Configuration_Output+=net_connect.send_command_timing("show cdp neighbors detail "+'\n\n' ,strip_prompt=False,strip_command=False)
+								# self.Configuration_Switch+=net_connect.send_command_timing("show interfaces status  "+'\n\n' ,strip_prompt=False,strip_command=False)
+								# self.Configuration_Output+=net_connect.send_command_timing("show inter desc "+'\n\n' ,strip_prompt=False,strip_command=False)
+								# self.Configuration_Router=net_connect.send_command_timing("show mpl l2 vc "+'\n\n' ,strip_prompt=False,strip_command=False)
+								# self.Configuration_Router+=net_connect.send_command_timing("show ip ospf int br "+'\n\n' ,strip_prompt=False,strip_command=False)
+								# self.Configuration_Router+=net_connect.send_command_timing("show ip ospf neighbor "+'\n\n' ,strip_prompt=False,strip_command=False)
+								# self.Configuration_Output+=net_connect.send_command_timing("show version "+'\n\n' ,strip_prompt=False,strip_command=False)
+								# self.Configuration_Output+=net_connect.send_command_timing("show cdp neighbors "+'\n\n' ,strip_prompt=False,strip_command=False)
 
 								# print ("\n\n\n\n===============================\n\n\n")
 								# print (self.Configuration_Switch)
@@ -353,6 +356,14 @@ class Discover_IPs:
 								# self.Configuration_Router=net_connect.send_command_timing("show ip ospf neighbor "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
 								# self.Configuration_Output+=net_connect.send_command_timing("show version "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
 								# self.Configuration_Output+=net_connect.send_command_timing("show cdp neighbors "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
+
+								test=self.Configuration_Switch + self.Configuration_Output + self.Configuration_Router
+								show_Summary=[]
+								show_Summary.append(test)
+								# self.Configuration_Output_list.append(self.Configuration_Switch)
+								self.Configuration_Output_list.append(test)
+								# self.Configuration_Output_list=t2
+							
 							else :
 								print (f"IP {ip} in Worked Old IPs don't excute the commands")
 
@@ -549,11 +560,6 @@ class Discover_IPs:
 											FailedIps.append(ip+"   Invalid input")
 	#########################################################################################################
 
-							test=self.Configuration_Switch
-							test+=self.Configuration_Output
-							test+=self.Configuration_Router
-							self.Configuration_Output_list.append(test)
-
 							try :
 							##### this if is for not creating file since it's already a worked up just do the discover cdp for it
 								if ip not in self.Worked_IPs_Old :
@@ -561,7 +567,15 @@ class Discover_IPs:
 									self.Hostname_Output_list.append(Hostname_Output)
 
 									file_name =Hostname_Output+".txt"
-									Overwrite_Old_File (path=Sub_Directory_Path_for_Backup ,file_name= file_name, Unknown_Lists=self.Configuration_Output_list)
+									print(f"Before Saving Configuration in {Hostname_Output}")
+									# print(f"\nself.Configuration_Output_list {ip}")
+									# print(self.Configuration_Output_list)
+
+									# Overwrite_Old_File (path=Sub_Directory_Path_for_Backup ,file_name= file_name, Unknown_Lists=self.Configuration_Output_list)
+									Overwrite_Old_File (path=Sub_Directory_Path_for_Backup ,file_name= file_name, Unknown_Lists=show_Summary)
+									print(f"After Saving Configuration in {Hostname_Output}")
+									# print(f"\nBefore self.Configuration_Output_list {ip}")
+									# print(self.Configuration_Output_list)
 								else :
 									print (f"IP  {ip} in worked IP don't append hostname")
 
@@ -570,10 +584,9 @@ class Discover_IPs:
 								self.FailedIps.append(ip+"   Exception in Saving File ")
 								self.IPs_ForIteration.append(ip)
 
-							self.Configuration_Output_list=[]
 
-							self.Configuration_Output_ID2_list.append(self.Configuration_Output_ID2)
-							self.Configuration_Output_ID254_list.append(self.Configuration_Output_ID254)
+							# self.Configuration_Output_ID2_list.append(self.Configuration_Output_ID2)
+							# self.Configuration_Output_ID254_list.append(self.Configuration_Output_ID254)
 
 
 			############### SAVE Output IN FILES  #######################
@@ -768,7 +781,6 @@ class Discover_IPs:
 			######	To ""ADD"" Failed IPs in File Called FailedIPs_Cumulative_File ######
 		#################################################################################
 		Overwrite_Old_File (path=Directory_Path ,file_name= FailedIPs_Cumulative_File, Unknown_Lists=self.FailedIps)
-		# Overwrite_Old_File (path=Directory_Path ,file_name= FailedIPs_Cumulative_File, Unknown_Lists=self.IPs_ForIteration)
 
 		#############################################################################################################################
 			########## Add worked IPs to Old Worked IPs in a file to avoid repeating it againg during discovering new IPs ####
@@ -846,11 +858,16 @@ class Discover_IPs:
 		print ("Welcome to Discover Script")
 		print("==============================================\n")
 
+
+		start_time = datetime.now()
 		self.Start_Threads()
+		print("\n\tElapsed time for Discover_IPs Script : " + str(datetime.now() - start_time))
+
 		print ("\n\nHey We Have Finished Successfully From Discovering. ^_^ ^_^ \n")
 
 
 if __name__== "__main__" :
+
 	print("\nThis is Run Main of Main_of_Discover_Script")
 	Discover_IPs_run=Discover_IPs()
 	Discover_IPs_run.Main_Fun_Call_Discover()

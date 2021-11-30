@@ -3,6 +3,7 @@ import time
 from Global_Variables import Global_Variables ## Call Class to set or Use global Variables
 from Ping_Test import Ping_Check
 from Discover_New_IPs import Discover_IPs
+from datetime import datetime
 
 Class_of_Global_Variables=Global_Variables()
 
@@ -21,7 +22,7 @@ class Loop_Scripts:
 
 
 	def Run_Ping(self) :
-		for i in range (1) :
+		for i in range (4) :
 			print ("\n########################################################################")
 			print(f"START Run_Ping {i+1}\n")
 			# os.system('python3  /home/khayat/Automation/Ping_Test.py')
@@ -42,7 +43,7 @@ class Loop_Scripts:
 
 	def Run_Discover(self):
 
-		for i in range (4) :
+		for i in range (6) :
 			print(f"\nSTART Run_Discover {i+1}\n")
 			print ("\n########################################################################")
 			# os.system('python3 /home/khayat/Automation/Discover_New_IPs.py')
@@ -61,8 +62,17 @@ class Loop_Scripts:
 		print("\n==============================================")
 		print ("Welcome to LOOP Script")
 		print("==============================================\n")
+
+		start_time_Run_Ping = datetime.now()
 		self.Run_Ping()
+		elapsed_time_Run_Ping = str(datetime.now() - start_time_Run_Ping)
+		
+		start_time_Run_Discover = datetime.now()
 		self.Run_Discover()
+		elapsed_time_Run_Discover =str(datetime.now() - start_time_Run_Discover)
+
+		print(f"\n\tElapsed time for Run_Ping in Loop_Scripts : {elapsed_time_Run_Ping}"  )
+		print(f"\n\tElapsed time for Run_Discover in Loop_Scripts : {elapsed_time_Run_Discover}"  )
 
 
 Loop_Scripts_Run=Loop_Scripts()

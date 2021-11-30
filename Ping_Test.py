@@ -4,6 +4,8 @@ import os
 import os.path
 import codecs
 
+
+from datetime import datetime
 import threading
 from multiprocessing.dummy import Pool as ThreadPool
 import time
@@ -213,12 +215,23 @@ class Ping_Check :
 		print("\n==============================================")
 		print ("Welcome to Ping Script Main_Fun_Call Function")
 		print("==============================================\n")
-
+		
+		start_time = datetime.now()
 		self.Ping_Test_Thread()
+
 		print("Hello, World!")
 		if __name__== "__main__" :
 			print("Main_of_Ping_Script")
 
+		print("\n\tElapsed time for Ping_Test_Script : " + str(datetime.now() - start_time))
+
 	# main()
 		print ("\n\nHey We Have Finished Successfully From Ping . ^_^ \n")
+
+
+
+if __name__== "__main__" :
+	print("\nThis is Run Main of Ping_Test_Script")
+	Ping_IPs_run=Ping_Check()
+	Ping_IPs_run.Main_Fun_Call_Ping()
 
