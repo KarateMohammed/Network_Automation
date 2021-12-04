@@ -22,7 +22,7 @@ class Loop_Scripts:
 
 
 	def Run_Ping(self) :
-		for i in range (4) :
+		for i in range (2) :
 			print ("\n########################################################################")
 			print(f"START Run_Ping {i+1}\n")
 			# os.system('python3  /home/khayat/Automation/Ping_Test.py')
@@ -43,7 +43,7 @@ class Loop_Scripts:
 
 	def Run_Discover(self):
 
-		for i in range (6) :
+		for i in range (3) :
 			print(f"\nSTART Run_Discover {i+1}\n")
 			print ("\n########################################################################")
 			# os.system('python3 /home/khayat/Automation/Discover_New_IPs.py')

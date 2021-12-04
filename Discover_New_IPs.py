@@ -48,8 +48,8 @@ Device_Type=[ 'cisco_ios_telnet','cisco_ios']
 
 
 
-Username_Device=["css","cisco"]
-Passowrd_Device=["css","cisco"]
+Username_Device=["cisco","css"]
+Passowrd_Device=["cisco","css"]
 Passowrd_Device_Enable=["cisco","cs"]
 
 
@@ -75,6 +75,8 @@ Sub_Directory_Path_for_Backup = Class_of_Global_Variables.Sub_Directory_Path_for
 Dict_all_IP_Usr_Pass_Ena=Class_of_Global_Variables.Dict_all_IP_Usr_Pass_Ena
 New_Dict_IPs_File=Class_of_Global_Variables.New_Dict_IPs_File
 Pattern_Filter_in_CDP=Class_of_Global_Variables.Pattern_Filter_in_CDP
+
+
 
 ##################################################################
 ####################### This is Main Class ##########################
@@ -149,7 +151,7 @@ class Discover_IPs:
 			print("==============================================\n")
 
 			global num_New # so we can edit it in this Function 
-			global Configuration_Output_list  
+			# global Configuration_Output_list  
 
 			if self.ConfigurationTest_Boolen==1 :
 					return self.ConfigurationTest_Boolen==1
@@ -357,12 +359,13 @@ class Discover_IPs:
 								# self.Configuration_Output+=net_connect.send_command_timing("show version "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
 								# self.Configuration_Output+=net_connect.send_command_timing("show cdp neighbors "+'\n\n',delay_factor=5,strip_prompt=False,strip_command=False)
 
+								test=""
 								test=self.Configuration_Switch + self.Configuration_Output + self.Configuration_Router
+								
 								show_Summary=[]
-								show_Summary.append(test)
-								# self.Configuration_Output_list.append(self.Configuration_Switch)
-								self.Configuration_Output_list.append(test)
-								# self.Configuration_Output_list=t2
+								show_Summary.append(str(test))
+								
+								self.Configuration_Output_list.append(str(test))
 							
 							else :
 								print (f"IP {ip} in Worked Old IPs don't excute the commands")
@@ -567,14 +570,14 @@ class Discover_IPs:
 									self.Hostname_Output_list.append(Hostname_Output)
 
 									file_name =Hostname_Output+".txt"
-									print(f"Before Saving Configuration in {Hostname_Output}")
+									# print(f"\nBefore Saving Configuration in {Hostname_Output}")
 									# print(f"\nself.Configuration_Output_list {ip}")
 									# print(self.Configuration_Output_list)
 
 									# Overwrite_Old_File (path=Sub_Directory_Path_for_Backup ,file_name= file_name, Unknown_Lists=self.Configuration_Output_list)
 									Overwrite_Old_File (path=Sub_Directory_Path_for_Backup ,file_name= file_name, Unknown_Lists=show_Summary)
-									print(f"After Saving Configuration in {Hostname_Output}")
-									# print(f"\nBefore self.Configuration_Output_list {ip}")
+									# print(f"\nAfter Saving Configuration in {Hostname_Output}")
+									# print(f"\nAfter self.Configuration_Output_list {ip}")
 									# print(self.Configuration_Output_list)
 								else :
 									print (f"IP  {ip} in worked IP don't append hostname")
