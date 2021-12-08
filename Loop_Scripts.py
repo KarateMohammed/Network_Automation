@@ -2,7 +2,8 @@ import os
 import time
 from Global_Variables import Global_Variables ## Call Class to set or Use global Variables
 from Ping_Test import Ping_Check
-from Discover_New_IPs import Discover_IPs
+# from Discover_New_IPs import Discover_IPs
+from Discover_New_IPs import  Main_Fun_Call_Discover
 from datetime import datetime
 
 Class_of_Global_Variables=Global_Variables()
@@ -22,7 +23,7 @@ class Loop_Scripts:
 
 
 	def Run_Ping(self) :
-		for i in range (2) :
+		for i in range (4) :
 			print ("\n########################################################################")
 			print(f"START Run_Ping {i+1}\n")
 			# os.system('python3  /home/khayat/Automation/Ping_Test.py')
@@ -43,14 +44,14 @@ class Loop_Scripts:
 
 	def Run_Discover(self):
 
-		for i in range (3) :
+		for i in range (10) :
 			print(f"\nSTART Run_Discover {i+1}\n")
 			print ("\n########################################################################")
 			# os.system('python3 /home/khayat/Automation/Discover_New_IPs.py')
 			# os.system('python ' +Directory_Path_Scripts + '/'+Discover_New_IPs_Script)
-
-			Lets_Discover=Discover_IPs()
-			Lets_Discover.Main_Fun_Call_Discover()
+			Main_Fun_Call_Discover()
+			# Lets_Discover=Discover_IPs()
+			# Lets_Discover.Main_Fun_Call_Discover()
 
 			print(f"\nEND  Run_Discover {i+1}")
 			print ("########################################################################")
