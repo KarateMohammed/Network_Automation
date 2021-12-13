@@ -168,7 +168,9 @@ def Get_IPs_to_Iterate() :
 	Full_Source_Path=Directory_Path+"/"+Source_IPs_File
 	with open(Full_Source_Path, 'r') as file:
 			num =file.read().splitlines()
+	file.close()
 	num= Remove_Deplicated_In_List(num)
+	print("num")
 	print(num)
 	print("After Full_Source_Path")
 
@@ -177,11 +179,12 @@ def Get_IPs_to_Iterate() :
 ####################### Get Old Worked IPs from file #################
 # ================================================================
 def Get_IPs_From_WorkedIPs() :
+	global Worked_IPs_Old
 	print("Before Worked_IPs_Old File")
 	Full_Source_Path=Directory_Path+"/"+Worked_IPs_Old_File
 	with open(Full_Source_Path, 'r') as file:
 			Worked_IPs_Old =file.read().splitlines()
-
+	file.close()
 	Worked_IPs_Old= Remove_Deplicated_In_List(Worked_IPs_Old)
 	print ("Worked_IPs_Old")
 	print (Worked_IPs_Old)
@@ -199,6 +202,8 @@ def ConfigurationTest(ip,Device_Type_Num= 0,User_Pass_Num= 0,Passowrd_Enable_Num
 		global num_New # so we can edit it in this Function 
 		global Configuration_Output_list  
 		global Hostname_Output_list
+		global Worked_IPs_Old
+		global num
 
 		if ConfigurationTest_Boolen==1 :
 				return ConfigurationTest_Boolen==1
@@ -560,7 +565,6 @@ def ConfigurationTest(ip,Device_Type_Num= 0,User_Pass_Num= 0,Passowrd_Enable_Num
 									if Pattern_Filter_in_CDP in Manag_IP :
 										if Manag_IP not in num and Manag_IP not in num_New and Manag_IP not in Worked_IPs_Old :
 											num_New.append(Show_CDP_Details_TEXTFSM_Dict["management_ip"])
-
 							else :
 								print("\n\n Hey It's Emptyyyyyy :(")
 
@@ -822,11 +826,13 @@ def Start_Threads() :
 	print("\n==============================================")
 	print ("Welcome to Start_Threads Function")
 	print("==============================================\n")
-	Set_Globals()
+
 	global num_New
 	global IPs_ForIteration
 	global num
 	start_time = datetime.now()
+
+	Set_Globals()
 
 	# ===============================================================================
 	#=============  Calling Main Function and Run Threads  ==========================
@@ -873,12 +879,6 @@ def Start_Threads() :
 	###################    Add new IPs and Remove Deplicated IPs   #####################################
 	####################################################################################################
 
-	num_New=Remove_Deplicated_In_List (num_New)	# to Remove Deplicated IPs
-	num=Remove_Deplicated_In_List (num)	# to Remove Deplicated IPs
-	if len(num_New) != 0 :
-		print ("\n\t\tNew Discovered IPs from cdp neighbors in num_New")
-		print (f"\t\tNumber of New Discovered IPs {len(num_New)}")
-
 	#################################################################################
 		######	To ""ADD"" new Discovered IPs in File Called Source_IPs_File ######
 	#################################################################################
@@ -914,6 +914,15 @@ def Start_Threads() :
 
 	####################################################################################################
 	####################################################################################################
+	num_New=Remove_Deplicated_In_List (num_New)	# to Remove Deplicated IPs
+	num=Remove_Deplicated_In_List (num)	# to Remove Deplicated IPs
+	if len(num_New) != 0 :
+		print ("\n\t\tNew Discovered IPs from cdp neighbors in num_New")
+		print (f"\t\tNumber of New Discovered IPs {len(num_New)}")
+	else :
+		print("\n\tNo New Discovered IPs from cdp neighbors")
+
+
 	if len(Hostname_Output_list)!=0 :
 		for i in Hostname_Output_list :
 				print ("\t\t"+i)

@@ -1,22 +1,22 @@
 class Global_Variables:
-	Directory_Path="D:/Test Project"
-	# Directory_Path="D:/Scripts"
+	# Directory_Path="D:/Test Project"		#work
+	Directory_Path="D:/Scripts"   		#home
 	Directory_Path_Scripts="C:/Users/see/PycharmProjects/Network_Automation"
 	# Directory_Path="/home/khayat"
 	Source_IP_File_for_Ping="d.txt"
 	Pinged_New_and_Old_IP_File="active.txt"
 	Source_IP_File_for_Automation="s.txt"
 
-	Pattern_Filter_in_CDP= "172."	## Pattern to filter in cdp neighbor command
-	# Pattern_Filter_in_CDP= "192."	## Pattern to filter in cdp neighbor command
+	# Pattern_Filter_in_CDP= "172."	## Pattern to filter in cdp neighbor command		#work
+	Pattern_Filter_in_CDP= "192."	## Pattern to filter in cdp neighbor command	#home
 	FailedIPs_Cumulative_File ="FailedIPs_Cumulative.txt"
 	Finished_IPs_Old_File="Worked_IPs_Old.txt"
 	New_Discovered_IPs_File="s_New.txt"
 	New_Dict_IPs_File="Dict_IPs.json"
 	Hardware_Modules_File="All_Hardware_Module_12.txt"
 	# Sub_Directory_Path_for_Backup="/home/khayat/Karate_Backup_11"
-	Sub_Directory_Path_for_Backup="D:/Test Project/Backup Test"
-	# Sub_Directory_Path_for_Backup="D:/Scripts/Karate_Backup_Test"
+	# Sub_Directory_Path_for_Backup="D:/Test Project/Backup Test"			#work
+	Sub_Directory_Path_for_Backup="D:/Scripts/Karate_Backup_Test"		#home
 	Ping_Test_Script="Ping_Test.py"
 	Discover_New_IPs_Script="Discover_New_IPs.py"
 	# Dict_all_IP_Usr_Pass_Ena={"ip":{"Connection_type":'',"k_Username":'',"k_Password":'',"k_Enable":''}}

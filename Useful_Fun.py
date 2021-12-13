@@ -173,16 +173,23 @@ def Remove_Deplicated_In_List (UnFiltered_List=[]) :
 def Overwrite_Old_File(path='' ,file_name='',Unknown_Lists=[] ) :
 ### overwrite on the old file and keep just inactive IPs to iterate it again
 	if not os.path.exists(path):
-		os.mkdir(path)
-		print("Directory " , path ,  " Created ")
+		if os.name=="nt" :
+			os.makedirs(path)
+			print("\nHey it's Win\n")
+			print("Directory " , path ,  " Created ")
+		else:
+			os.mkdir(path)
+			print("\nHey it's NOT Win\n")
+			print("Directory " , path ,  " Created ")
 	else:
 		print("Directory " , path ,  " already exists")
+
 	fullpath = os.path.join(path, file_name)
 	file1 = codecs.open(fullpath, encoding='utf-8',mode="w+")
 	for i in Unknown_Lists :
 		file1.write((str(i)+"\n"))
-	os.chmod(fullpath, 0o777)  ## to use it with full permisson
 	file1.close()
+	os.chmod(fullpath, 0o777)  ## to use it with full permisson
 
 
 ###########################################################
@@ -195,10 +202,21 @@ def Append_to_Old_File(path='' ,file_name='',Unknown_Lists=[]) :
 		print("Directory " , path ,  " Created ")
 	else:
 		print("Directory " , path ,  " already exists")
+	in_File=[]
 	fullpath = os.path.join(path, file_name)
+	with open(fullpath, 'r') as file1:
+		in_File =file1.read().splitlines()
+	in_File= Remove_Deplicated_In_List(in_File)
+	
+	with open(fullpath, 'w') as file1:
+		for i in in_File :
+			file1.write((str(i)+"\n"))	
+	file1.close()
+
 	with open(fullpath, 'a') as file:
 		for i in Unknown_Lists:
-			file.write((str(i)+"\n"))
+			if i not in in_File :
+				file.write((str(i)+"\n"))
 	os.chmod(fullpath, 0o777)  ## to use it with full permisson
 	file.close()
 

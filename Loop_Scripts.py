@@ -23,9 +23,9 @@ class Loop_Scripts:
 
 
 	def Run_Ping(self) :
-		for i in range (4) :
+		for i in range (1) :
 			print ("\n########################################################################")
-			print(f"START Run_Ping {i+1}\n")
+			print(f"START Run_Ping {i+1}")
 			# os.system('python3  /home/khayat/Automation/Ping_Test.py')
 			# os.system('python ' +Directory_Path_Scripts + '/'+Ping_Test_Script)
 
@@ -44,9 +44,9 @@ class Loop_Scripts:
 
 	def Run_Discover(self):
 
-		for i in range (10) :
-			print(f"\nSTART Run_Discover {i+1}\n")
-			print ("\n########################################################################")
+		for i in range (3) :
+			print(f"\nSTART Run_Discover {i+1}")
+			print ("########################################################################")
 			# os.system('python3 /home/khayat/Automation/Discover_New_IPs.py')
 			# os.system('python ' +Directory_Path_Scripts + '/'+Discover_New_IPs_Script)
 			Main_Fun_Call_Discover()
