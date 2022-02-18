@@ -44,7 +44,7 @@ class Loop_Scripts:
 
 	def Run_Discover(self):
 
-		for i in range (3) :
+		for i in range (5) :
 			print(f"\nSTART Run_Discover {i+1}")
 			print ("########################################################################")
 			# os.system('python3 /home/khayat/Automation/Discover_New_IPs.py')

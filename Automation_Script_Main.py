@@ -44,6 +44,11 @@ import subprocess
 Device_Type=[ 'cisco_ios_telnet','cisco_ios']
 
 
+
+Passowrd_Device_Enable=["barkotel","cisco","Moi@Pcd123","p@ssw0rd@cisco2018"]
+Username_Device=["m.essam","gen1","see","cisco","gen2","moi","admin"]
+Passowrd_Device=["totatota2017","Gen1Hq1","cisco","cisco","Gen2Hq2","barkotel","P@ssw0rd"]
+
 # Username_Device=["cisco"]
 # Passowrd_Device=["cisco"]
 # Passowrd_Device_Enable=["cisco","cs"]

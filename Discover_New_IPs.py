@@ -42,16 +42,15 @@ import subprocess
 
 
 # Device_Type=[ 'cisco_ios','cisco_ios_telnet']
-Device_Type=[ 'cisco_ios_telnet','cisco_ios']
+Device_Type=['cisco_ios_telnet','cisco_ios']
+# Device_Type=['cisco_nxos','cisco_nxos_ssh','cisco_ios_telnet','cisco_ios']
 
 
 
 
-
-
-Username_Device=["cisco","css"]
-Passowrd_Device=["cisco","css"]
-Passowrd_Device_Enable=["cisco","cs"]
+# Username_Device=["cisco","css"]
+# Passowrd_Device=["cisco","css"]
+# Passowrd_Device_Enable=["cisco","cs"]
 
 
 
@@ -70,8 +69,12 @@ Directory_Path = Class_of_Global_Variables.Directory_Path
 Source_IPs_File = Class_of_Global_Variables.Source_IP_File_for_Automation
 FailedIPs_Cumulative_File = Class_of_Global_Variables.FailedIPs_Cumulative_File
 Worked_IPs_Old_File = Class_of_Global_Variables.Finished_IPs_Old_File
+Unwanted_IPs_Old_File = Class_of_Global_Variables.Unwanted_IPs_Old_File
+
 New_Discovered_IPs_File =  Class_of_Global_Variables.New_Discovered_IPs_File
 Hardware_Modules_File = Class_of_Global_Variables.Hardware_Modules_File
+CDP_Neighbors_File = Class_of_Global_Variables.CDP_Neighbors_File
+CDP_Neighbors_Details_File = Class_of_Global_Variables.CDP_Neighbors_Details_File
 Sub_Directory_Path_for_Backup = Class_of_Global_Variables.Sub_Directory_Path_for_Backup
 Dict_all_IP_Usr_Pass_Ena=Class_of_Global_Variables.Dict_all_IP_Usr_Pass_Ena
 New_Dict_IPs_File=Class_of_Global_Variables.New_Dict_IPs_File
@@ -92,12 +95,15 @@ FailedIps=[]
 IPs_ForIteration=[]
 Worked_IPs_Old=[] ## For not repeating dicovering worked IPs after removing them from S file
 Worked_IPs_Now=[] ## For not repeating Old worked IPs 
+Unwanted_IPs_Old=[]
 
 count=0
 ConfigurationTest_Boolen =0 	## to Return from Recursion
 num_New=[]						## for New IPs
 num=[]						## for New IPs
 All_Hardware_Module_List=[]
+All_CDP_Neighbors_List =[]
+All_CDP_Neighbors_Details_List =[]
 Hardware_IP_Empty_List=[]
 
 Show_Output_SOR=''
@@ -106,6 +112,8 @@ Configuration_Output_ID254=''
 Configuration_Router=""
 Configuration_Switch=""
 Configuration_Output=""
+Show_CDP_Neigbhors=""
+Show_CDP_Neigbhors_Details=""
 
 print("\n==============================================")
 print ("Welcome to Init in Discover_IPs Script")
@@ -122,9 +130,14 @@ def Set_Globals():
 	global Configuration_Router
 	global Configuration_Switch
 	global Configuration_Output
+	global Show_CDP_Neigbhors
+	global Show_CDP_Neigbhors_Details
 	global All_Hardware_Module_List
+	global All_CDP_Neighbors_List
+	global All_CDP_Neighbors_Details_List
 	global Hardware_IP_Empty_List
 
+	global Unwanted_IPs_Old
 	global Global_Output
 	global Hostname_Output_list
 	global Configuration_Output_list
@@ -145,7 +158,11 @@ def Set_Globals():
 	Configuration_Router=""
 	Configuration_Switch=""
 	Configuration_Output=""
+	Show_CDP_Neigbhors=""
+	Show_CDP_Neigbhors_Details=""
 	All_Hardware_Module_List=[]
+	All_CDP_Neighbors_List=[]
+	All_CDP_Neighbors_Details_List=[]
 	Hardware_IP_Empty_List=[]
 
 	Global_Output=[]
@@ -156,6 +173,7 @@ def Set_Globals():
 	FailedIps=[]
 	IPs_ForIteration=[]
 	Worked_IPs_Old=[] ## For not repeating dicovering worked IPs after removing them from S file
+	Unwanted_IPs_Old=[] ## For excluding certain ip 
 	Worked_IPs_Now=[] ## For not repeating Old worked IPs 
 	num_New=[]						## for New IPs
 	num=[]						## for New IPs
@@ -188,6 +206,20 @@ def Get_IPs_From_WorkedIPs() :
 	Worked_IPs_Old= Remove_Deplicated_In_List(Worked_IPs_Old)
 	print ("Worked_IPs_Old")
 	print (Worked_IPs_Old)
+
+# ================================================================
+####################### Get Unwanted IPs from file #################
+# ================================================================
+def Get_IPs_From_UnwantedIPs() :
+	global Unwanted_IPs_Old
+	print("Before Unwanted_IPs_Old File")
+	Full_Source_Path=Directory_Path+"/"+Unwanted_IPs_Old_File
+	with open(Full_Source_Path, 'r') as file:
+			Unwanted_IPs_Old =file.read().splitlines()
+	file.close()
+	Unwanted_IPs_Old= Remove_Deplicated_In_List(Unwanted_IPs_Old)
+	print ("Unwanted_IPs_Old")
+	print (Unwanted_IPs_Old)
 
 ##############################################################################
 ##################### The main Function of configuration ##################### 
@@ -452,13 +484,32 @@ def ConfigurationTest(ip,Device_Type_Num= 0,User_Pass_Num= 0,Passowrd_Enable_Num
 							# print ("\t\tConfiguration_Output_TEXTFSM")
 							# for k,v in Show_Version_TEXTFSM_Dict.items() :
 							# 	print (f"{k} :: {v}")
+							
+							##################################################################
+							######## check if nexus or not to change key string
+							##################################################################
+							if Device_Type[Device_Type_Num]=="cisco_nxos" or Device_Type[Device_Type_Num] =="cisco_nxos_ssh" :
+								Key_Show_Version_TEXTFSM_Dict ="platform"
+								print ("Key is platform") 
+							else :
+								print ("Key is hardware") 
+								Key_Show_Version_TEXTFSM_Dict ="hardware" 
 
-							if Show_Version_TEXTFSM_Dict["hardware"] : 
-								Hardware_IP = "\t\t"+str(Show_Version_TEXTFSM_Dict["hardware"][0]) + f"		{ip}___" + str(Show_Version_TEXTFSM_Dict["hostname"])
+
+							if Show_Version_TEXTFSM_Dict[Key_Show_Version_TEXTFSM_Dict] : 
+								Hardware_IP = "\t\t"+str(Show_Version_TEXTFSM_Dict[Key_Show_Version_TEXTFSM_Dict][0]) + f"		{ip}___" + str(Show_Version_TEXTFSM_Dict["hostname"])
 								All_Hardware_Module_List.append(Hardware_IP)
 							else :
 								Hardware_IP_Empty_List.append(ip+"   Hardware Empty")
 							Hostname_Output=ip+".__"+str(Show_Version_TEXTFSM_Dict["hostname"])
+
+
+							# if Show_Version_TEXTFSM_Dict["hardware"] : 
+							# 	Hardware_IP = "\t\t"+str(Show_Version_TEXTFSM_Dict["hardware"][0]) + f"		{ip}___" + str(Show_Version_TEXTFSM_Dict["hostname"])
+							# 	All_Hardware_Module_List.append(Hardware_IP)
+							# else :
+							# 	Hardware_IP_Empty_List.append(ip+"   Hardware Empty")
+							# Hostname_Output=ip+".__"+str(Show_Version_TEXTFSM_Dict["hostname"])
 
 						except Exception as e:
 							print ('Exception in show version\t' +ip)
@@ -549,28 +600,79 @@ def ConfigurationTest(ip,Device_Type_Num= 0,User_Pass_Num= 0,Passowrd_Enable_Num
 							# print(Configuration_Output_list)
 							# print("\n\n\n")
 
+
 							Show_CDP_Details_TEXTFSM_List=net_connect.send_command_timing("show cdp neighbors detail "+'\n\n'  ,strip_prompt=False,strip_command=False, use_textfsm=True)
 							check_list= isinstance(Show_CDP_Details_TEXTFSM_List, list)
 							if check_list :
 								print("\n\nHey It's Not Empty List.")
 								for n in Show_CDP_Details_TEXTFSM_List :
 									Show_CDP_Details_TEXTFSM_Dict = n  # this is because the output is in list then in Dict 
-								# print (type(Show_CDP_Details_TEXTFSM_List))
-								# print (Show_CDP_Details_TEXTFSM_List)
-								# print (type(Show_CDP_Details_TEXTFSM_Dict))
-								# print (Show_CDP_Details_TEXTFSM_Dict)
-								# print (type(Show_CDP_Details_TEXTFSM_Dict["management_ip"]))
+									# print (type(Show_CDP_Details_TEXTFSM_List))
+									# print (Show_CDP_Details_TEXTFSM_List)
+									# print (type(Show_CDP_Details_TEXTFSM_Dict))
+									# print (Show_CDP_Details_TEXTFSM_Dict)
+									# print (type(Show_CDP_Details_TEXTFSM_Dict["management_ip"]))
 									# print (Show_CDP_Details_TEXTFSM_Dict["management_ip"])
-									Manag_IP=Show_CDP_Details_TEXTFSM_Dict["management_ip"]
+									
+									
+									##################################################################
+									######## check if nexus or not to change key string
+									##################################################################									
+									if Device_Type[Device_Type_Num]=="cisco_nxos" or Device_Type[Device_Type_Num] =="cisco_nxos_ssh" :
+										Key_Show_CDP_Details_TEXTFSM_Dict="mgmt_ip"
+									else:
+										Key_Show_CDP_Details_TEXTFSM_Dict="management_ip"
+
+
+									Manag_IP=Show_CDP_Details_TEXTFSM_Dict[Key_Show_CDP_Details_TEXTFSM_Dict]
 									if Pattern_Filter_in_CDP in Manag_IP :
 										if Manag_IP not in num and Manag_IP not in num_New and Manag_IP not in Worked_IPs_Old :
-											num_New.append(Show_CDP_Details_TEXTFSM_Dict["management_ip"])
+											num_New.append(Show_CDP_Details_TEXTFSM_Dict[Key_Show_CDP_Details_TEXTFSM_Dict])
 							else :
-								print("\n\n Hey It's Emptyyyyyy :(")
+								print("\n\n Hey CDP Neighbors It's Emptyyyyyy :(")
+
+
+							Show_OSPF_TEXTFSM_List=net_connect.send_command_timing("show ip ospf neighbor "+'\n\n'  ,strip_prompt=False,strip_command=False, use_textfsm=True)
+							# print("\n\nShow_OSPF_TEXTFSM_List")
+							# print(Show_OSPF_TEXTFSM_List)
+							check_list_OSPF= isinstance(Show_OSPF_TEXTFSM_List, list)
+							
+							if check_list_OSPF :
+								print("\n\nHey It's Not Empty List.")
+								for n in Show_OSPF_TEXTFSM_List :
+									Show_OSPF_TEXTFSM_Dict = n  # this is because the output is in list then in Dict 
+									# print (type(Show_OSPF_TEXTFSM_List))
+									# print (Show_OSPF_TEXTFSM_List)
+									# print (type(Show_OSPF_TEXTFSM_Dict))
+									# print (Show_OSPF_TEXTFSM_Dict)
+									# print (type(Show_OSPF_TEXTFSM_Dict["neighbor_id"]))
+									# print (Show_OSPF_TEXTFSM_Dict["neighbor_id"])
+									
+
+									##################################################################
+									######## check if nexus or not to change key string
+									##################################################################
+									if Device_Type[Device_Type_Num]=="cisco_nxos" or Device_Type[Device_Type_Num] =="cisco_nxos_ssh" :
+										Key_Show_OSPF_TEXTFSM_Dict=""
+									else:
+										Key_Show_OSPF_TEXTFSM_Dict="neighbor_id"
+
+
+									Neighbor_Id=Show_OSPF_TEXTFSM_Dict[Key_Show_OSPF_TEXTFSM_Dict]
+									if Pattern_Filter_in_CDP in Neighbor_Id :
+										if Neighbor_Id not in num and Neighbor_Id not in num_New and Neighbor_Id not in Worked_IPs_Old :
+											num_New.append(Show_OSPF_TEXTFSM_Dict[Key_Show_OSPF_TEXTFSM_Dict])
+									
+
+							else :
+								print("\n\n Hey OSPF Nieghbors It's Emptyyyyyy :(")
+
+
 
 						except Exception as e:
-							print ('Exception in show cdp neighbors \t' +ip)
-							FailedIps.append(ip+"   Exception in show cdp neighbors ")
+							print(e)
+							print ('Exception in show cdp neighbors or in show ip ospf neighbor \t' +ip)
+							FailedIps.append(ip+"   Exception in show cdp neighbors or in show ip ospf neighbor ")
 							IPs_ForIteration.append(ip)
 				###########################################################################################################
 				################    Example on confirmation message Function
@@ -658,6 +760,16 @@ def ConfigurationTest(ip,Device_Type_Num= 0,User_Pass_Num= 0,Passowrd_Enable_Num
 							Configuration_Router+=net_connect.send_command_timing("show ip ospf neighbor "+'\n\n' ,strip_prompt=False,strip_command=False)
 							Configuration_Output+=net_connect.send_command_timing("show version "+'\n\n' ,strip_prompt=False,strip_command=False)
 							Configuration_Output+=net_connect.send_command_timing("show cdp neighbors "+'\n\n' ,strip_prompt=False,strip_command=False)
+
+							Show_CDP_Neigbhors=net_connect.send_command_timing("show cdp neighbors "+'\n\n' ,strip_prompt=False,strip_command=False)
+							Show_CDP_Neigbhors_Details=net_connect.send_command_timing("show cdp neighbors detail"+'\n\n' ,strip_prompt=False,strip_command=False)
+
+							
+							print("\nBefore New CDP_Neighbors_Append")
+							All_CDP_Neighbors_List.append(Show_CDP_Neigbhors)
+							# print(All_CDP_Neighbors_List)
+							All_CDP_Neighbors_Details_List.append(Show_CDP_Neigbhors_Details)
+							print("\nAfter New CDP_Neighbors_Append")
 
 							Show_Output_SOR=""
 							Show_Output_SOR=Configuration_Switch + Configuration_Output + Configuration_Router
@@ -847,24 +959,32 @@ def Start_Threads() :
 
 	Get_IPs_to_Iterate()  # to iniate num list of ips
 	Get_IPs_From_WorkedIPs()  # to get Worked ips and put it in a list of ips
+	print("Before Get_IPs_From_UnwantedIPs")
+	Get_IPs_From_UnwantedIPs() # to get unwanted ips to exclude them
+	print("After Get_IPs_From_UnwantedIPs")
 	print(num)
 	num=Validate_List_ip (num) 	## Call Validate Function to remove unvalid IPs 
 	print(f"After Validating num List {num}\n")
 	for x in num:
-			print("\ninside main Thread loop")
+			if x in Unwanted_IPs_Old :
+				print(f"\n{x} is in Unwanted IPs")
+				continue
+			else :
 
-			ConfigurationTest_Boolen==0
-			thread_counter+=1
-			if (thread_counter % 100)==0 :
-				print (f"\n\nSleep  {thread_counter}\n\n")
-				time.sleep(20)
-				print ("\n\nAfter Sleep\n\n")
-			print (f"\t\tWe are Processing this IP  {x}\n")
-			try:
-					my_thread = threading.Thread(target=ConfigurationTest, args=(x,0,0))
-					my_thread.start()
-			except Exception:
-					FailedExceptionIps.append(num[x])
+				print("\ninside main Thread loop")
+
+				ConfigurationTest_Boolen==0
+				thread_counter+=1
+				if (thread_counter % 100)==0 :
+					print (f"\n\nSleep  {thread_counter}\n\n")
+					time.sleep(20)
+					print ("\n\nAfter Sleep\n\n")
+				print (f"\t\tWe are Processing this IP  {x}\n")
+				try:
+						my_thread = threading.Thread(target=ConfigurationTest, args=(x,0,0))
+						my_thread.start()
+				except Exception:
+						FailedExceptionIps.append(num[x])
 
 	main_thread = threading.current_thread()
 	for some_thread in threading.enumerate():
@@ -911,6 +1031,12 @@ def Start_Threads() :
 	#################################################################################
 	Append_to_Old_File(path=Directory_Path,file_name=Hardware_Modules_File ,Unknown_Lists=All_Hardware_Module_List)
 
+
+	#################################################################################
+		######	To ""Save"" All CDP Neigbhors  ######
+	#################################################################################
+	Append_to_Old_File(path=Directory_Path,file_name=CDP_Neighbors_File ,Unknown_Lists=All_CDP_Neighbors_List)
+	Append_to_Old_File(path=Directory_Path,file_name=CDP_Neighbors_Details_File ,Unknown_Lists=All_CDP_Neighbors_Details_List)
 
 	####################################################################################################
 	####################################################################################################
